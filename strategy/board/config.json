@@ -1,0 +1,44 @@
+{
+  "name": "打板策略",
+  "capital": 10000,
+  "max_stocks_per_day": 2,
+  "scan_times": [
+    "09:30",
+    "09:31",
+    "09:33",
+    "09:37",
+    "09:42",
+    "09:50",
+    "10:05",
+    "10:20"
+  ],
+  "buy_conditions": {
+    "pre_board_chg_min": 7,
+    "pre_board_chg_max": 9.5,
+    "min_volume_ratio": 2.0,
+    "require_sector_leader": true,
+    "max_price": 30
+  },
+  "board_grading": {
+    "time_weights": {
+      "09:30": 5,
+      "09:31": 4,
+      "09:33": 3,
+      "09:37": 2,
+      "09:42": 1,
+      "09:50": 0.5,
+      "10:05": 0,
+      "10:20": 0
+    },
+    "turnover_optimal": [
+      2,
+      8
+    ],
+    "volume_ratio_min": 2
+  },
+  "stop_loss": {
+    "break_board_loss": -3,
+    "next_day_loss": -5,
+    "time_stop_days": 2
+  }
+}

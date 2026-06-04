@@ -1,0 +1,33 @@
+{
+  "name": "3万核心作战系统",
+  "total_capital": 30000,
+  "core_capital": 20000,
+  "guerrilla_capital": 10000,
+  "max_loss_per_trade": 600,
+  "max_loss_pct": 2.0,
+  "screening": {
+    "main_force_buy_min": 20000000,
+    "volume_ratio_min": 2.5,
+    "ma30_up": true,
+    "chg_min": 5,
+    "net_asset_positive": true
+  },
+  "position": {
+    "max_single_stock": 20000,
+    "min_single_stock": 5000,
+    "formula": "600 / (entry_price - stop_price)"
+  },
+  "take_profit": {
+    "stage1_pct": 1,
+    "stage1_action": "move_stop_to_cost",
+    "stage2_pct": 5,
+    "stage2_action": "sell_half",
+    "stage3_pct": 10,
+    "stage3_action": "trail_ma5"
+  },
+  "stop_loss": {
+    "hard_max": 600,
+    "never_average_down": true,
+    "target": "monthly_beat_index"
+  }
+}

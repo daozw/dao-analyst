@@ -1,0 +1,21 @@
+{
+  "name": "波段策略",
+  "capital": 20000,
+  "max_stocks_per_day": 3,
+  "buy_conditions": {
+    "min_signal": 3,
+    "chg_min": -2,
+    "chg_max": 5
+  },
+  "position_sizing": {
+    "signal_6": 8000,
+    "signal_5": 6000,
+    "signal_4": 5000,
+    "signal_3": 3000
+  },
+  "stop_loss": {
+    "atr_mult": 2.0,
+    "max_loss_pct": -8,
+    "trailing_pct": 5
+  }
+}

@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>英维克 (002837) 深度分析报告 | 2026.05.30</title>
+<style>
+:root {
+  --bg: #0d1117;
+  --card: #161b22;
+  --border: #30363d;
+  --text: #c9d1d9;
+  --text-secondary: #8b949e;
+  --green: #3fb950;
+  --red: #f85149;
+  --yellow: #d2991d;
+  --blue: #58a6ff;
+  --purple: #bc8cff;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; line-height:1.6; padding:20px; max-width:900px; margin:0 auto; }
+h1 { font-size:1.6em; border-bottom:1px solid var(--border); padding-bottom:12px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center; }
+h2 { font-size:1.2em; margin:28px 0 14px; color:var(--blue); }
+h3 { font-size:1em; margin:16px 0 10px; color:var(--text); }
+.card { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:16px; margin-bottom:16px; }
+.price-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; }
+.price-item { text-align:center; }
+.price-item .label { font-size:0.75em; color:var(--text-secondary); text-transform:uppercase; margin-bottom:4px; }
+.price-item .value { font-size:1.4em; font-weight:700; }
+.price-item .sub { font-size:0.8em; color:var(--text-secondary); }
+.red { color:var(--red); }
+.green { color:var(--green); }
+.yellow { color:var(--yellow); }
+table { width:100%; border-collapse:collapse; font-size:0.85em; margin:12px 0; }
+th { background:var(--bg); color:var(--text-secondary); font-weight:600; padding:8px 10px; text-align:right; border-bottom:1px solid var(--border); }
+td { padding:8px 10px; text-align:right; border-bottom:1px solid var(--border); }
+th:first-child, td:first-child { text-align:left; }
+th:last-child, td:last-child { text-align:right; }
+.tag { display:inline-block; padding:2px 8px; border-radius:4px; font-size:0.75em; margin:2px; }
+.tag-red { background:rgba(248,81,73,0.15); color:var(--red); }
+.tag-green { background:rgba(63,185,80,0.15); color:var(--green); }
+.tag-yellow { background:rgba(210,153,29,0.15); color:var(--yellow); }
+.tag-blue { background:rgba(88,166,255,0.15); color:var(--blue); }
+.news-item { padding:10px 0; border-bottom:1px solid var(--border); }
+.news-item:last-child { border-bottom:none; }
+.news-item .date { font-size:0.75em; color:var(--text-secondary); }
+.news-item .title { font-weight:600; margin:4px 0; }
+.news-item .source { font-size:0.75em; color:var(--text-secondary); }
+.conclusion { border-left:3px solid var(--blue); padding-left:16px; margin:20px 0; }
+.conclusion.bear { border-left-color:var(--red); }
+.conclusion.bull { border-left-color:var(--green); }
+.fund-bar { height:20px; border-radius:4px; margin:4px 0; display:flex; overflow:hidden; }
+.fund-bar .super { background:var(--purple); }
+.fund-bar .big { background:var(--blue); }
+.fund-bar .mid { background:var(--yellow); }
+.fund-bar .small { background:var(--green); }
+.signal-box { padding:8px 12px; border-radius:6px; margin:8px 0; font-size:0.9em; }
+.signal-box.warn { background:rgba(248,81,73,0.1); border:1px solid rgba(248,81,73,0.3); }
+.signal-box.info { background:rgba(88,166,255,0.1); border:1px solid rgba(88,166,255,0.3); }
+.chart-bar { display:flex; align-items:center; margin:6px 0; font-size:0.8em; }
+.chart-bar .bar-label { width:100px; text-align:right; padding-right:10px; color:var(--text-secondary); }
+.chart-bar .bar-fill { height:18px; border-radius:3px; min-width:2px; display:flex; align-items:center; padding-left:8px; font-weight:600; font-size:0.75em; }
+.footer { text-align:center; color:var(--text-secondary); font-size:0.75em; margin-top:40px; padding-top:16px; border-top:1px solid var(--border); }
+</style>
+</head>
+<body>
+
+<h1>
+  🏢 英维克 (002837.SZ)
+  <span class="red">-6.69%</span>
+</h1>
+
+<!-- 实时行情 -->
+<div class="card">
+  <h3>📊 实时行情 <span style="font-size:0.7em;color:var(--text-secondary)">2026-05-30 17:25</span></h3>
+  <div class="price-grid">
+    <div class="price-item">
+      <div class="label">最新价</div>
+      <div class="value red">91.00</div>
+      <div class="sub red">-6.52</div>
+    </div>
+    <div class="price-item">
+      <div class="label">开盘</div>
+      <div class="value">97.52</div>
+      <div class="sub">平开</div>
+    </div>
+    <div class="price-item">
+      <div class="label">最高</div>
+      <div class="value">97.77</div>
+    </div>
+    <div class="price-item">
+      <div class="label">最低</div>
+      <div class="value red">88.02</div>
+    </div>
+    <div class="price-item">
+      <div class="label">成交量</div>
+      <div class="value">64.77万手</div>
+    </div>
+    <div class="price-item">
+      <div class="label">成交额</div>
+      <div class="value">59.12亿</div>
+    </div>
+    <div class="price-item">
+      <div class="label">振幅</div>
+      <div class="value red">10.00%</div>
+    </div>
+  </div>
+</div>
+
+<!-- 关键信号 -->
+<div class="signal-box warn">
+  ⚠️ <strong>今日大跌信号：</strong>低开低走，盘中触及88.02低点（较前收跌9.7%），收盘跌幅6.69%。成交额59亿大幅放量，换手活跃，主力资金明显流出。
+</div>
+
+<!-- 财务概览 -->
+<div class="card">
+  <h3>💰 核心财务数据</h3>
+  <table>
+    <tr>
+      <th>指标</th>
+      <th>2026Q1</th>
+      <th>同比</th>
+      <th>2025FY</th>
+      <th>同比</th>
+      <th>2024FY</th>
+      <th>2023FY</th>
+    </tr>
+    <tr>
+      <td>营业收入</td>
+      <td>11.75亿</td>
+      <td class="green">+26.03%</td>
+      <td>60.68亿</td>
+      <td class="green">+32.23%</td>
+      <td>45.89亿</td>
+      <td>35.29亿</td>
+    </tr>
+    <tr>
+      <td>归母净利润</td>
+      <td class="red">865.8万</td>
+      <td class="red">-81.97%</td>
+      <td>5.22亿</td>
+      <td class="green">+15.30%</td>
+      <td>4.53亿</td>
+      <td>3.44亿</td>
+    </tr>
+    <tr>
+      <td>扣非净利润</td>
+      <td class="red">539.3万</td>
+      <td class="red">-87.10%</td>
+      <td>5.04亿</td>
+      <td class="green">+17.22%</td>
+      <td>4.30亿</td>
+      <td>3.16亿</td>
+    </tr>
+    <tr>
+      <td>ROE(加权)</td>
+      <td>0.25%</td>
+      <td>-1.38pp</td>
+      <td class="green">16.58%</td>
+      <td>-0.30pp</td>
+      <td>16.88%</td>
+      <td>15.03%</td>
+    </tr>
+    <tr>
+      <td>毛利率</td>
+      <td class="red">24.29%</td>
+      <td>-2.16pp</td>
+      <td>27.86%</td>
+      <td>-0.89pp</td>
+      <td>—</td>
+      <td>—</td>
+    </tr>
+  </table>
+</div>
+
+<!-- 营收趋势视觉 -->
+<div class="card">
+  <h3>📈 营收与利润趋势</h3>
+  <div style="margin:8px 0;">
+    <div style="font-size:0.8em;color:var(--text-secondary);margin-bottom:4px;">营业收入（亿元）</div>
+    <div class="chart-bar">
+      <div class="bar-label">2023FY</div>
+      <div class="bar-fill" style="width:58%;background:var(--blue);">35.29</div>
+    </div>
+    <div class="chart-bar">
+      <div class="bar-label">2024FY</div>
+      <div class="bar-fill" style="width:75%;background:var(--blue);">45.89</div>
+    </div>
+    <div class="chart-bar">
+      <div class="bar-label">2025FY</div>
+      <div class="bar-fill" style="width:100%;background:var(--blue);">60.68</div>
+    </div>
+  </div>
+  <div style="margin:8px 0;">
+    <div style="font-size:0.8em;color:var(--text-secondary);margin-bottom:4px;">归母净利润（亿元）</div>
+    <div class="chart-bar">
+      <div class="bar-label">2023FY</div>
+      <div class="bar-fill" style="width:65%;background:var(--green);">3.44</div>
+    </div>
+    <div class="chart-bar">
+      <div class="bar-label">2024FY</div>
+      <div class="bar-fill" style="width:85%;background:var(--green);">4.53</div>
+    </div>
+    <div class="chart-bar">
+      <div class="bar-label">2025FY</div>
+      <div class="bar-fill" style="width:100%;background:var(--green);">5.22</div>
+    </div>
+    <div class="chart-bar">
+      <div class="bar-label">2026Q1</div>
+      <div class="bar-fill" style="width:1.6%;background:var(--red);">0.087</div>
+    </div>
+  </div>
+</div>
+
+<!-- Q1 利润崩塌分析 -->
+<div class="card">
+  <h3>🔍 2026Q1 利润崩塌原因拆解</h3>
+  <table>
+    <tr><th>因素</th><th>影响</th><th>说明</th></tr>
+    <tr>
+      <td>汇兑损失</td>
+      <td class="red">财务费用↑↑</td>
+      <td>海外业务用当地币种结算，人民币升值产生汇兑损失</td>
+    </tr>
+    <tr>
+      <td>利息支出</td>
+      <td class="red">财务费用↑↑</td>
+      <td>融资规模增加，利息支出加大</td>
+    </tr>
+    <tr>
+      <td>信用减值</td>
+      <td class="red">减值损失↑</td>
+      <td>国内IDC建设节奏变慢，回款周期变长，坏账计提增加</td>
+    </tr>
+    <tr>
+      <td>毛利率下降</td>
+      <td class="red">-2.16pp</td>
+      <td>Q1收入组合变化，高毛利液冷订单交付延迟</td>
+    </tr>
+    <tr>
+      <td>季节性因素</td>
+      <td class="yellow">Q1传统淡季</td>
+      <td>春节长假+费用刚性，Q1历来是全年利润低点</td>
+    </tr>
+    <tr>
+      <td>订单积压</td>
+      <td class="green">潜在利好</td>
+      <td>Q1订单充沛但未实现发货确认收入，后续季度有望释放</td>
+    </tr>
+  </table>
+</div>
+
+<!-- 主力资金 -->
+<div class="card">
+  <h3>💸 近15日主力资金流向</h3>
+  <table>
+    <tr><th>日期</th><th>主力净流入</th><th>超大单</th><th>大单</th><th>中单</th><th>小单</th></tr>
+    <tr><td>05-29</td><td class="red">-13.59亿</td><td class="red">-3.73亿</td><td class="red">-9.86亿</td><td class="green">+5.41亿</td><td class="green">+8.17亿</td></tr>
+    <tr><td>05-28</td><td class="green">+0.43亿</td><td class="green">+0.52亿</td><td class="red">-0.09亿</td><td class="red">-0.87亿</td><td class="green">+0.44亿</td></tr>
+    <tr><td>05-27</td><td class="red">-5.37亿</td><td class="red">-2.59亿</td><td class="red">-2.78亿</td><td class="green">+0.39亿</td><td class="green">+4.98亿</td></tr>
+    <tr><td>05-26</td><td class="red">-11.86亿</td><td class="red">-7.54亿</td><td class="red">-4.31亿</td><td class="green">+3.15亿</td><td class="green">+8.71亿</td></tr>
+    <tr><td>05-25</td><td class="red">-2.87亿</td><td class="red">-1.62亿</td><td class="red">-1.25亿</td><td class="green">+1.74亿</td><td class="green">+1.13亿</td></tr>
+    <tr><td>05-22</td><td class="green">+2.54亿</td><td class="green">+0.62亿</td><td class="green">+1.92亿</td><td class="red">-0.64亿</td><td class="red">-1.90亿</td></tr>
+    <tr><td>05-21</td><td class="red">-9.96亿</td><td class="red">-7.45亿</td><td class="red">-2.51亿</td><td class="green">+3.54亿</td><td class="green">+6.42亿</td></tr>
+    <tr><td>05-20</td><td class="green">+5.45亿</td><td class="green">+7.62亿</td><td class="red">-2.17亿</td><td class="red">-3.12亿</td><td class="red">-2.33亿</td></tr>
+    <tr><td>05-19</td><td class="red">-3.14亿</td><td class="red">-1.89亿</td><td class="red">-1.25亿</td><td class="green">+1.15亿</td><td class="green">+1.99亿</td></tr>
+    <tr><td>05-15</td><td class="red">-1.26亿</td><td class="red">-0.20亿</td><td class="red">-1.06亿</td><td class="green">+1.30亿</td><td class="red">-0.04亿</td></tr>
+    <tr><td>05-14</td><td class="red">-0.54亿</td><td class="green">+0.83亿</td><td class="red">-1.37亿</td><td class="red">-0.81亿</td><td class="green">+1.36亿</td></tr>
+    <tr><td>05-13</td><td class="green">+3.55亿</td><td class="green">+4.01亿</td><td class="red">-0.46亿</td><td class="red">-2.16亿</td><td class="red">-1.39亿</td></tr>
+    <tr><td>05-12</td><td class="red">-6.48亿</td><td class="red">-5.44亿</td><td class="red">-1.04亿</td><td class="green">+2.26亿</td><td class="green">+4.22亿</td></tr>
+    <tr><td>05-11</td><td class="red">-7.66亿</td><td class="red">-4.47亿</td><td class="red">-3.19亿</td><td class="green">+2.07亿</td><td class="green">+5.59亿</td></tr>
+  </table>
+  <div class="signal-box warn" style="margin-top:12px;">
+    ⚠️ 近15个交易日中<strong>10天主力净流出</strong>，累计净流出约50亿+。散户接盘特征明显（小单持续净流入）。主力持续撤退信号。
+  </div>
+</div>
+
+<!-- 业务结构 -->
+<div class="card">
+  <h3>🏗️ 业务结构 (2025FY)</h3>
+  <table>
+    <tr><th>业务板块</th><th>营收</th><th>占比</th><th>同比增长</th></tr>
+    <tr><td>机房温控节能</td><td>34.49亿</td><td>56.83%</td><td class="green">+41.28%</td></tr>
+    <tr><td>机柜温控节能</td><td>19.77亿</td><td>32.59%</td><td class="green">+15.30%</td></tr>
+    <tr><td style="font-size:0.8em;padding-left:24px;">其中：储能</td><td>~17亿</td><td>~28%</td><td class="green">~+14%</td></tr>
+    <tr><td>客车空调</td><td>0.90亿</td><td>1.49%</td><td>—</td></tr>
+    <tr><td>轨交空调</td><td>0.45亿</td><td>0.74%</td><td>—</td></tr>
+    <tr><td>其他</td><td>5.07亿</td><td>8.35%</td><td>—</td></tr>
+  </table>
+</div>
+
+<!-- 关键新闻 -->
+<div class="card">
+  <h3>📰 关键动态</h3>
+  
+  <div class="news-item">
+    <div class="date">2026-05-30</div>
+    <div class="title">英维克获得"信号采集器"外观设计专利</div>
+    <div class="source">证券之星 | 年内累计获专利105项</div>
+  </div>
+
+  <div class="news-item">
+    <div class="date">2026-05-30</div>
+    <div class="title">传闻满天飞！英维克与英伟达合作遭董秘否认</div>
+    <div class="source">网易/第一财经 | 市值暴涨4倍后业绩爆雷，英伟达供应商身份存疑</div>
+  </div>
+
+  <div class="news-item">
+    <div class="date">2026-05-13</div>
+    <div class="title">英维克股东大会："我不是、我没有、别瞎说"</div>
+    <div class="source">上海证券报 | 管理层澄清英伟达合作传闻</div>
+  </div>
+
+  <div class="news-item">
+    <div class="date">2026-04-23</div>
+    <div class="title">英维克投资者关系活动：Q1订单充沛，交付延迟是利润下滑主因</div>
+    <div class="source">公司公告 | 海外产能布局持续推进</div>
+  </div>
+
+  <div class="news-item">
+    <div class="date">2026-04-21</div>
+    <div class="title">液冷服务器概念低开，英维克跌停</div>
+    <div class="source">证券时报 | Q1利润降81.97%触发恐慌抛售</div>
+  </div>
+
+  <div class="news-item">
+    <div class="date">2026-04-14</div>
+    <div class="title">独家对话英维克——"液冷的前景无限广阔"</div>
+    <div class="source">深圳新闻网</div>
+  </div>
+</div>
+
+<!-- 风险与机会 -->
+<div class="card">
+  <h3>⚖️ 风险与机会评估</h3>
+  
+  <h4 style="color:var(--red);margin-top:12px;">⚠️ 主要风险</h4>
+  <div class="tag tag-red">Q1利润断崖</div>
+  <div class="tag tag-red">主力持续出货</div>
+  <div class="tag tag-red">英伟达概念证伪</div>
+  <div class="tag tag-red">应收账款高企(30.5亿)</div>
+  <div class="tag tag-red">信用减值风险</div>
+  <div class="tag tag-red">海外汇兑风险</div>
+  <div class="tag tag-red">IDC建设放缓</div>
+  <div class="tag tag-red">毛利率下滑</div>
+
+  <h4 style="color:var(--green);margin-top:16px;">💡 潜在机会</h4>
+  <div class="tag tag-green">液冷龙头地位</div>
+  <div class="tag tag-green">Q1订单充沛(交付延迟)</div>
+  <div class="tag tag-green">海外产能布局(泰国/美国)</div>
+  <div class="tag tag-green">营收高增速(+32%)</div>
+  <div class="tag tag-green">ROE 16.58%</div>
+  <div class="tag tag-green">AI算力建设长期趋势</div>
+  <div class="tag tag-green">研发投入4.46亿(+27.5%)</div>
+</div>
+
+<!-- 总结 -->
+<h2>📋 DAO量化助手·综合研判</h2>
+
+<div class="conclusion bear">
+  <strong>短期（1-4周）：偏空 ⚠️</strong><br>
+  主力资金近15天净流出规模巨大（累计约50亿+），今日放量大跌6.69%，散户接盘特征明显。Q1利润断崖虽有一定季节性因素，但减值、汇兑、毛利率三重压力短期内难以消除。英伟达概念被管理层明确否认，概念炒作逻辑瓦解。<br>
+  <span style="font-size:0.85em;color:var(--text-secondary);">关键支撑位：88元（今日低点），若跌破看80元整数关口。</span>
+</div>
+
+<div class="conclusion bull">
+  <strong>中长期（6-12个月）：谨慎乐观 📊</strong><br>
+  液冷是AI基础设施确定性赛道，英维克仍是国内龙头。Q1订单充沛但交付延迟，有望在Q2-Q3集中释放。海外产能布局（泰国、美国）是中长期增长极。2025全年业绩扎实（营收+32%、ROE 16.58%），若Q2利润修复得到验证，当前估值可能提供较好的中长期买点。<br>
+  <span style="font-size:0.85em;color:var(--text-secondary);">关注Q2业绩发布窗口（预计7-8月），若扣非净利润环比显著改善则为右侧信号。</span>
+</div>
+
+<div class="card">
+  <h3>🎯 操作建议参考</h3>
+  <table>
+    <tr><th>策略</th><th>建议</th><th>逻辑</th></tr>
+    <tr>
+      <td>短线</td>
+      <td class="red">回避</td>
+      <td>主力出逃、量价背离，追高风险极大</td>
+    </tr>
+    <tr>
+      <td>中线</td>
+      <td class="yellow">观望，等Q2业绩验证</td>
+      <td>若Q2利润修复+主力回流，可考虑建仓</td>
+    </tr>
+    <tr>
+      <td>长线</td>
+      <td class="green">逢低分批关注</td>
+      <td>液冷赛道确定性高，当前杀跌可能提供长期买点</td>
+    </tr>
+  </table>
+</div>
+
+<div class="footer">
+  英维克 (002837.SZ) 深度分析 | DAO量化助手 | 2026-05-30<br>
+  数据来源：东方财富妙想金融数据 | 资讯来源：妙想资讯搜索<br>
+  ⚠️ 本报告不构成投资建议，仅供参考
+</div>
+
+</body>
+</html>

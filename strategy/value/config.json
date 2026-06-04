@@ -1,0 +1,22 @@
+{
+  "name": "价值发现策略",
+  "description": "每日扫描低估值+稳定+便宜的标的，推荐加入波段池",
+  "capital": 0,
+  "screening": {
+    "pe_max": 25,
+    "pb_max": 2.5,
+    "price_max": 30,
+    "price_min": 3,
+    "chg_range": [-2, 5],
+    "market_cap_min": 30,
+    "daily_volume_min": 10000000
+  },
+  "signals": {
+    "min_signal": 2,
+    "prefer": ["PE低估", "MA20中多", "换手率活跃"]
+  },
+  "output": {
+    "top_n": 10,
+    "sort_by": "signal"
+  }
+}

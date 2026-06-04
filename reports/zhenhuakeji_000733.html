@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<style>
+:root{--bg:#0d1117;--card:#161b22;--border:#30363d;--text:#c9d1d9;--t2:#8b949e;--g:#3fb950;--r:#f85149;--y:#d2991d;--b:#58a6ff}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font:13px/1.55 -apple-system,BlinkMacSystemFont,sans-serif;padding:20px;max-width:700px;margin:0 auto}
+h1{font-size:1.15em;border-bottom:1px solid var(--border);padding-bottom:8px;margin-bottom:12px;display:flex;justify-content:space-between}
+h2{font-size:.95em;color:var(--b);margin:14px 0 8px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:5px;padding:12px;margin-bottom:10px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:8px}
+.item{text-align:center}.item .l{font-size:.65em;color:var(--t2)}.item .v{font-size:1.1em;font-weight:700}.item .s{font-size:.65em;color:var(--t2)}
+.r{color:var(--r)}.g{color:var(--g)}.y{color:var(--y)}
+table{width:100%;border-collapse:collapse;font-size:.76em;margin:6px 0}
+th{background:var(--bg);color:var(--t2);font-weight:600;padding:5px 7px;text-align:right;border-bottom:1px solid var(--border)}
+td{padding:5px 7px;text-align:right;border-bottom:1px solid var(--border)}
+th:first-child,td:first-child{text-align:left}
+.badge{display:inline-block;padding:2px 6px;border-radius:3px;font-size:.68em;font-weight:700}
+.bs{background:var(--g);color:#000}.br{background:var(--r);color:#fff}.bw{background:rgba(88,166,255,.2);color:var(--b)}
+.sig{padding:7px 10px;border-radius:4px;margin:6px 0;font-size:.8em}
+.sig.warn{background:rgba(248,81,73,.07);border:1px solid rgba(248,81,73,.22)}
+.sig.info{background:rgba(88,166,255,.07);border:1px solid rgba(88,166,255,.22)}
+.bar{display:flex;align-items:center;margin:3px 0;font-size:.7em}
+.bar .bl{width:70px;text-align:right;padding-right:6px;color:var(--t2)}
+.bar .bf{height:15px;border-radius:3px;min-width:3px;padding-left:5px;font-weight:600;font-size:.65em}
+.row{display:flex;flex-wrap:wrap;gap:10px}.row>*{flex:1;min-width:180px}
+.news{font-size:.75em;padding:5px 0;border-bottom:1px solid var(--border)}.news:last-child{border:none}.news .nd{color:var(--t2);font-size:.7em}
+.footer{text-align:center;color:var(--t2);font-size:.65em;margin-top:16px;padding-top:8px;border-top:1px solid var(--border)}
+</style>
+</head>
+<body>
+
+<h1>振华科技 000733.SZ <span class="r">-3.54%</span></h1>
+
+<div class="card">
+<div class="grid">
+<div class="item"><div class="l">最新价</div><div class="v r">51.49</div><div class="s r">-1.89</div></div>
+<div class="item"><div class="l">开盘</div><div class="v">54.05</div></div>
+<div class="item"><div class="l">最高</div><div class="v">54.91</div></div>
+<div class="item"><div class="l">最低</div><div class="v r">50.70</div></div>
+<div class="item"><div class="l">振幅</div><div class="v r">7.89%</div></div>
+<div class="item"><div class="l">换手率</div><div class="v">8.74%</div></div>
+<div class="item"><div class="l">成交额</div><div class="v">25.5亿</div></div>
+</div>
+</div>
+
+<div class="row">
+<div class="card">
+<h3>分时量能</h3>
+<div class="bar"><div class="bl">早盘30分</div><div class="bf" style="width:75%;background:var(--r)">37.5%</div></div>
+<div class="bar"><div class="bl">上午中段</div><div class="bf" style="width:64%;background:var(--y)">31.9%</div></div>
+<div class="bar"><div class="bl">下午中段</div><div class="bf" style="width:31%;background:var(--b)">15.7%</div></div>
+<div class="bar"><div class="bl">尾盘30分</div><div class="bf" style="width:29%;background:var(--b)">14.7%</div></div>
+<div style="font-size:.7em;color:var(--t2);margin-top:4px">早盘巨量37.5%→主力激烈博弈，冲高54.91后大幅回落</div>
+</div>
+<div class="card">
+<h3>近5日资金</h3>
+<table>
+<tr><th>日期</th><th>收盘</th><th>涨跌</th><th>主力净流入</th></tr>
+<tr><td>05-29</td><td>51.49</td><td class="r">-3.54%</td><td class="r">-3003万</td></tr>
+<tr><td>05-28</td><td>53.38</td><td class="g">+6.04%</td><td class="g">-4046万</td></tr>
+<tr><td>05-27</td><td>50.34</td><td>0%</td><td class="r">-7477万</td></tr>
+<tr><td>05-26</td><td>50.34</td><td class="r">-3.34%</td><td class="r">-5496万</td></tr>
+<tr><td>05-25</td><td>52.08</td><td class="g">+5.92%</td><td class="g">+3539万</td></tr>
+</table>
+<div class="sig warn" style="font-size:.7em">主力近5日4天净流出，累计约2.2亿；今天换手8.74%异常放量</div>
+</div>
+</div>
+
+<div class="card">
+<h3>核心财务</h3>
+<table>
+<tr><th></th><th>2026Q1</th><th>同比</th><th>2025FY</th><th>同比</th><th>2024FY</th></tr>
+<tr><td>营收</td><td>8.37亿</td><td class="r">-7.9%</td><td>57.55亿</td><td class="g">+10.3%</td><td>52.19亿</td></tr>
+<tr><td>归母净利</td><td class="r">1591万</td><td class="r">-72.8%</td><td>10.25亿</td><td class="g">+5.7%</td><td>9.70亿</td></tr>
+<tr><td>扣非净利</td><td class="r">608万</td><td class="r">-86.4%</td><td>9.45亿</td><td class="g">+12.8%</td><td>8.38亿</td></tr>
+<tr><td>毛利率</td><td class="r">39.96%</td><td>—</td><td class="r">45.95%</td><td>-3.7pp</td><td>49.70%</td></tr>
+<tr><td>ROE</td><td>0.10%</td><td>—</td><td>6.74%</td><td>+0.05pp</td><td>6.69%</td></tr>
+<tr><td>经营现金流</td><td>—</td><td>—</td><td class="g">13.9亿</td><td>-13.1%</td><td>16.0亿</td></tr>
+</table>
+</div>
+
+<div class="row">
+<div class="card">
+<h3>⚠️ 风险点</h3>
+<div style="font-size:.8em">
+<p>• 毛利率连续3年下滑(59%→46%→40%)</p>
+<p>• Q1利润断崖-73%，量价齐跌</p>
+<p>• 军工价格管控持续向上游传导</p>
+<p>• 应收账款68.9亿，体量庞大</p>
+<p>• 存货23.6亿，环比增8.1%</p>
+</div>
+</div>
+<div class="card">
+<h3>💡 亮点</h3>
+<div style="font-size:.8em">
+<p>• 钽电容龙头，产能10亿只</p>
+<p>• 民用钽电容涨价(服务器/机器人需求)</p>
+<p>• 4Q25业绩恢复增长(+23.5%)</p>
+<p>• 经营现金流13.9亿，盈利质量好</p>
+<p>• 负债率仅16.96%，财务安全</p>
+<p>• 机构目标均价57.14，空间+11%</p>
+</div>
+</div>
+</div>
+
+<div class="card">
+<h3>机构评级</h3>
+<table>
+<tr><th>机构</th><th>评级</th><th>2026E净利</th><th>2027E净利</th><th>PE(26E)</th></tr>
+<tr><td>光大证券</td><td class="g">买入</td><td>11.17亿</td><td>12.87亿</td><td>23x</td></tr>
+<tr><td style="color:var(--t2)">机构共识</td><td class="g">买入(2家)</td><td>—</td><td>—</td><td>目标57.14</td></tr>
+</table>
+</div>
+
+<div class="card">
+<h3>最新动态</h3>
+<div class="news"><div class="nd">05-29</div>民用钽电容涨价：服务器/机器人需求爆发+贵金属涨价，2025年底已提价</div>
+<div class="news"><div class="nd">05-28</div>投资者交流：民用占比15-20%，钽电容产能10亿只，不盲目扩产</div>
+<div class="news"><div class="nd">05-20</div>股东会通过10派3.7元分红方案</div>
+<div class="news"><div class="nd">05-12</div>光大证券买入：Q4已恢复增长，民品布局激活新动能，PE 23x</div>
+</div>
+
+<h2>📍 买卖点提示</h2>
+<div class="card">
+<table>
+<tr><th>级别</th><th>价格</th><th>信号</th><th>逻辑</th></tr>
+<tr><td><span class="badge br">强阻力</span></td><td class="r">57.1</td><td>减仓</td><td>机构目标均价，突破需业绩催化</td></tr>
+<tr><td><span class="badge br">第一阻力</span></td><td class="r">54.9</td><td>观察</td><td>今日高点，突破则短线转强</td></tr>
+<tr><td><span class="badge bw">中枢</span></td><td class="b">52.0</td><td>参考</td><td>多空分水岭，站稳则偏多</td></tr>
+<tr><td><span class="badge bs">第一支撑</span></td><td class="g">50.3</td><td>试探</td><td>5月26-27日双底，短线强支撑</td></tr>
+<tr><td><span class="badge bs">第二支撑</span></td><td class="g">48.0</td><td>加仓</td><td>心理整数关口+前期平台</td></tr>
+<tr><td><span class="badge bs">强支撑</span></td><td class="g">45.0</td><td>重仓</td><td>长期价值区间，PE<20x</td></tr>
+</table>
+</div>
+
+<div class="card">
+<table>
+<tr><th>情景</th><th>条件</th><th>策略</th></tr>
+<tr><td>📉 弱势</td><td>跌破50.3</td><td>止损，等48以下再考虑</td></tr>
+<tr><td>📊 震荡</td><td>50.3~54.9</td><td>观望，等方向确认</td></tr>
+<tr><td>📈 反弹</td><td>站上54.9+放量</td><td>轻仓跟进，目标57</td></tr>
+<tr><td>🚀 突破</td><td>放量过57.1</td><td>中线看多，机构目标达成</td></tr>
+</table>
+<div class="sig info" style="font-size:.75em">📌 关键观察：Q1虽差但4Q25已恢复(净利+23.5%)；钽电容涨价逻辑+民品拓展是中期催化剂；50元附近是重要博弈区间。</div>
+</div>
+
+<div class="footer">振华科技(000733) 分析报告 | DAO量化助手 | 2026-05-30 | 数据:东方财富妙想 | ⚠️不构成投资建议</div>
+</body>
+</html>

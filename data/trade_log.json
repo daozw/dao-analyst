@@ -1,0 +1,92 @@
+[
+  {
+    "time": "2026-06-01 12:41:44",
+    "action": "BUY",
+    "code": "600900",
+    "name": "长江电力",
+    "price": 27.7,
+    "quantity": 100,
+    "amount": 2770.0,
+    "result": "成功"
+  },
+  {
+    "time": "2026-06-01 13:08:10",
+    "action": "BUY",
+    "code": "601919",
+    "name": "中远海控",
+    "price": 14.84,
+    "quantity": 100,
+    "amount": 1484.0,
+    "result": "成功"
+  },
+  {
+    "time": "2026-06-01 14:01:08",
+    "action": "BUY",
+    "code": "000807",
+    "name": "云铝股份",
+    "price": 29.08,
+    "quantity": 100,
+    "amount": 2908.0,
+    "result": "成功"
+  },
+  {
+    "time": "2026-06-04 12:15:44",
+    "action": "SELL",
+    "code": "000001",
+    "name": "平安银行",
+    "price": 10.87,
+    "quantity": 100,
+    "amount": 1087.0,
+    "result": "成功"
+  },
+  {
+    "time": "2026-06-04 12:15:45",
+    "action": "SELL",
+    "code": "000521",
+    "name": "长虹美菱",
+    "price": 5.69,
+    "quantity": 100,
+    "amount": 569.0,
+    "result": "成功"
+  },
+  {
+    "time": "2026-06-04 12:15:46",
+    "action": "SELL",
+    "code": "000807",
+    "name": "云铝股份",
+    "price": 28.77,
+    "quantity": 100,
+    "amount": 2877.0,
+    "result": "成功"
+  },
+  {
+    "time": "2026-06-04 12:15:46",
+    "action": "SELL",
+    "code": "600439",
+    "name": "瑞贝卡",
+    "price": 2.88,
+    "quantity": 1500,
+    "amount": 4320.0,
+    "result": "卖出委托失败: 委托失败，可用数量不足"
+  },
+  {
+    "time": "2026-06-04 12:15:47",
+    "action": "SELL",
+    "code": "601919",
+    "name": "中远海控",
+    "price": 14.54,
+    "quantity": 100,
+    "amount": 1454.0,
+    "result": "成功"
+  },
+  {
+    "time": "2026-06-04 12:15:47",
+    "action": "SELL",
+    "code": "603071",
+    "name": "物产环能",
+    "price": 14.48,
+    "quantity": 100,
+    "amount": 1448.0,
+    "result": "成功"
+  }
+]

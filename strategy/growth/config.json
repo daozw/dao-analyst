@@ -1,0 +1,31 @@
+{
+  "name": "业绩增长策略",
+  "capital": 10000,
+  "max_stocks": 5,
+  "run_schedule": "weekly",
+  "screening": {
+    "net_profit_yoy_min": 50,
+    "deducted_profit_yoy_min": 30,
+    "revenue_yoy_min": 20,
+    "market_cap_min": 50,
+    "deducted_ratio_min": 80,
+    "pe_ttm_max": 50,
+    "operating_cf_gt_profit": true,
+    "gross_margin_stable": true
+  },
+  "validation": {
+    "sector_check": true,
+    "volume_increase": true,
+    "institutional_flow": true,
+    "analyst_upgrade": 2
+  },
+  "surprise": {
+    "gap_up_min": 5,
+    "analyst_target_upgrade_min": 2
+  },
+  "risk": {
+    "pre_announcement_runup_max": 30,
+    "low_base_skip": true,
+    "max_pe_percentile": 70
+  }
+}

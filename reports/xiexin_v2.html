@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<style>
+:root{--bg:#0d1117;--card:#161b22;--border:#30363d;--text:#e6edf3;--t2:#8b949e;--g:#3fb950;--r:#f85149;--y:#d2991d;--b:#58a6ff;--p:#bc8cff}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font:16px/1.6 -apple-system,BlinkMacSystemFont,sans-serif;padding:28px 20px;max-width:720px;margin:0 auto}
+h1{font-size:1.4em;padding-bottom:10px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center}
+h2{font-size:1.1em;color:var(--b);margin:18px 0 10px;padding-left:12px;border-left:3px solid var(--b)}
+.card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:14px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.kv{text-align:center}.kv .k{font-size:.7em;color:var(--t2);margin-bottom:2px;text-transform:uppercase;letter-spacing:.5px}.kv .v{font-size:1.3em;font-weight:700}.kv .s{font-size:.7em;color:var(--t2)}
+.r{color:var(--r)}.g{color:var(--g)}.y{color:var(--y)}.b{color:var(--b)}
+table{width:100%;border-collapse:collapse;font-size:.85em;margin:8px 0}
+th{background:rgba(48,54,61,.5);color:var(--t2);font-weight:600;padding:8px 10px;text-align:right;border-bottom:2px solid var(--border);font-size:.8em;letter-spacing:.5px}
+td{padding:9px 10px;text-align:right;border-bottom:1px solid var(--border)}
+th:first-child,td:first-child{text-align:left}
+.tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:.72em;font-weight:700;margin:2px 3px}
+.tg{background:rgba(63,185,80,.15);color:var(--g)}.tr{background:rgba(248,81,73,.15);color:var(--r)}.ty{background:rgba(210,153,29,.15);color:var(--y)}.tb{background:rgba(88,166,255,.15);color:var(--b)}
+.alert{padding:10px 14px;border-radius:6px;margin:8px 0;font-size:.88em}
+.alert-warn{background:rgba(248,81,73,.06);border:1px solid rgba(248,81,73,.2)}
+.alert-info{background:rgba(88,166,255,.06);border:1px solid rgba(88,166,255,.2)}
+.alert-good{background:rgba(63,185,80,.06);border:1px solid rgba(63,185,80,.2)}
+.news-item{padding:8px 0;border-bottom:1px solid rgba(48,54,61,.5);font-size:.85em}
+.news-item:last-child{border:none}.news-item .nd{font-size:.72em;color:var(--t2);margin-bottom:2px}
+.flow-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(48,54,61,.3);font-size:.82em}
+.flow-row:last-child{border:none}
+.flow-row .fr-date{width:55px;color:var(--t2)}.flow-row .fr-price{width:50px;text-align:right}.flow-row .fr-net{width:100px;text-align:right;font-weight:600}
+.section-label{font-size:.78em;color:var(--t2);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.footer{text-align:center;color:var(--t2);font-size:.7em;margin-top:20px;padding-top:12px;border-top:1px solid var(--border)}
+.sep{width:100%;height:1px;background:var(--border);margin:8px 0}
+</style>
+</head>
+<body>
+
+<h1>⚡ 协鑫能科 <span style="font-size:.8em;color:var(--t2)">002015.SZ</span> <span class="g">+1.65%</span></h1>
+
+<h2>📊 行情概览</h2>
+<div class="card">
+<div class="grid4">
+<div class="kv"><div class="k">最新价</div><div class="v g">23.38</div><div class="s g">+0.38</div></div>
+<div class="kv"><div class="k">今开</div><div class="v">23.09</div></div>
+<div class="kv"><div class="k">最高</div><div class="v">23.86</div></div>
+<div class="kv"><div class="k">最低</div><div class="v">22.40</div></div>
+</div>
+<div class="sep"></div>
+<div class="grid4">
+<div class="kv"><div class="k">振幅</div><div class="v">6.35%</div></div>
+<div class="kv"><div class="k">换手率</div><div class="v">11.86%</div></div>
+<div class="kv"><div class="k">成交额</div><div class="v">44.7亿</div></div>
+<div class="kv"><div class="k">昨收</div><div class="v">23.00</div></div>
+</div>
+<div class="alert alert-info" style="margin-top:10px">📐 分时：早盘29.5% | 上午31.6% | 下午19.5% | 尾盘19.2% — 全天量能均匀，尾盘放量博弈</div>
+</div>
+
+<h2>💸 主力资金 & 暗盘监控</h2>
+<div class="card">
+<div class="section-label">近5日主力资金</div>
+<div class="flow-row"><span class="fr-date">05-29</span><span class="fr-price g">23.38</span><span class="fr-net r">-3,670万</span><span style="font-size:.75em;color:var(--t2)">涨1.65% 主力小幅流出</span></div>
+<div class="flow-row"><span class="fr-date">05-28</span><span class="fr-price g">23.00</span><span class="fr-net g">+1.54亿</span><span style="font-size:.75em;color:var(--t2)">涨5.99% 主力大买 🔥</span></div>
+<div class="flow-row"><span class="fr-date">05-27</span><span class="fr-price g">21.70</span><span class="fr-net g">+1,416万</span><span style="font-size:.75em;color:var(--t2)">涨0.79% 温和流入</span></div>
+<div class="flow-row"><span class="fr-date">05-26</span><span class="fr-price r">21.53</span><span class="fr-net r">-1.11亿</span><span style="font-size:.75em;color:var(--t2)">跌3.84% 主力砸盘</span></div>
+<div class="flow-row"><span class="fr-date">05-25</span><span class="fr-price g">22.39</span><span class="fr-net r">-7,520万</span><span style="font-size:.75em;color:var(--t2)">涨3.90% 借涨出货 ⚠️</span></div>
+<div class="sep"></div>
+<div class="section-label">暗盘资金</div>
+<div class="grid2" style="font-size:.85em">
+<div><span class="tag tg">融资</span> 余额11.93亿，05-28净买7,438万</div>
+<div><span class="tag ty">大宗</span> 05-29机构卖467.6万(20万股@23.38)</div>
+<div><span class="tag tr">质押</span> 控股股东质押50.52%(4,200万股)</div>
+<div><span class="tag tb">融券</span> 余额907万(39.4万股)</div>
+</div>
+</div>
+
+<h2>💰 核心财务</h2>
+<div class="card">
+<table>
+<tr><th></th><th>2026Q1</th><th>同比</th><th>2025FY</th><th>同比</th><th>2024FY</th></tr>
+<tr><td>营业收入</td><td>23.06亿</td><td class="r">-21.4%</td><td>103.3亿</td><td class="g">+5.4%</td><td>97.96亿</td></tr>
+<tr><td>归母净利润</td><td class="g">2.88亿</td><td class="g">+13.5%</td><td>4.04亿</td><td class="r">-17.3%</td><td>4.89亿</td></tr>
+<tr><td>扣非净利润</td><td class="g">2.53亿</td><td class="g">+31.0%</td><td>3.29亿</td><td class="g">+11.8%</td><td>2.94亿</td></tr>
+<tr><td>毛利率</td><td class="g">30.62%</td><td>↑</td><td class="g">28.40%</td><td>↑</td><td>27.66%</td></tr>
+<tr><td>ROE</td><td>2.41%</td><td>—</td><td>3.45%</td><td>—</td><td>4.17%</td></tr>
+<tr><td>负债率</td><td class="y">64.23%</td><td>偏高</td><td>—</td><td>—</td><td>—</td></tr>
+</table>
+<div class="grid2" style="margin-top:10px">
+<div class="alert alert-good"><strong>✅ 亮点</strong><br><span style="font-size:.85em">• Q1扣非+31%，盈利质量改善<br>• 毛利率连续提升 27.7→30.6%<br>• "电力+算力"转型战略<br>• 虚拟电厂江苏份额33%<br>• 5家机构全数买入评级</span></div>
+<div class="alert alert-warn"><strong>⚠️ 风险</strong><br><span style="font-size:.85em">• Q1营收-21%，转型阵痛<br>• 负债率64%，偏高<br>• 控股股东质押过半<br>• 算力收入占比极低<br>• 全年ROE仅3.45%</span></div>
+</div>
+</div>
+
+<h2>📰 最新动态</h2>
+<div class="card">
+<div class="news-item"><div class="nd">05-29</div>融资净买入7,438万；机构大宗卖出468万。5家机构买入评级</div>
+<div class="news-item"><div class="nd">05-27</div>"电力+算力"协同：为中国电信提供算力租赁，目前算力收入占比仍低</div>
+<div class="news-item"><div class="nd">05-26</div>控股股东上海其辰质押4,200万股，累计质押占持股50.52%</div>
+<div class="news-item"><div class="nd">05-15</div>发布鑫零碳生态方案与能碳管理平台，签约5家零碳园区</div>
+<div class="news-item"><div class="nd">05-12</div>投资者交流：绿电直供+虚拟电厂+AIDC智算节点，长三角/珠三角布局</div>
+</div>
+
+<h2>🎯 买卖点参考</h2>
+<div class="card">
+<table>
+<tr><th>信号级别</th><th>价格</th><th>操作</th><th>判断依据</th></tr>
+<tr><td><span class="tag tr">强阻力</span></td><td class="r" style="font-weight:700">26.0</td><td>减持</td><td>前期密集成交区上沿</td></tr>
+<tr><td><span class="tag tr">第一阻力</span></td><td class="r">24.0</td><td>观察</td><td>整数关口 + 今日高点附近</td></tr>
+<tr><td><span class="tag tb">多空中枢</span></td><td class="b" style="font-weight:700">22.5</td><td>参考</td><td>近5日均价，方向分水岭</td></tr>
+<tr><td><span class="tag tg">第一支撑</span></td><td class="g">21.5</td><td>试探</td><td>5月26-27日双底区域</td></tr>
+<tr><td><span class="tag tg">第二支撑</span></td><td class="g" style="font-weight:700">20.4</td><td>加仓</td><td>业绩说明会价位(5月8日)</td></tr>
+<tr><td><span class="tag tg">强支撑</span></td><td class="g">18.5</td><td>重仓</td><td>长期价值区间 PE&lt;15x</td></tr>
+</table>
+<div class="sep"></div>
+<table>
+<tr><th>情景</th><th>触发条件</th><th>策略</th></tr>
+<tr><td>📉 弱势</td><td>跌破 21.5</td><td>止损观望，等20.4以下</td></tr>
+<tr><td>📊 震荡</td><td>21.5 ~ 24.0</td><td>不操作，等方向确认</td></tr>
+<tr><td>📈 反弹</td><td>放量突破 24.0</td><td>轻仓跟进，目标26</td></tr>
+<tr><td>🚀 转强</td><td>放量突破 26.0</td><td>中线看多，空间打开</td></tr>
+</table>
+<div class="alert alert-info" style="margin-top:10px">📌 <strong>研判：</strong>转型期营收降但扣非+31%→盈利结构优化。放量双连阳(换手11%+)，短线活跃但负债+质押偏高，关键看22.5中枢能否守住。</div>
+</div>
+
+<div class="footer">协鑫能科(002015) | DAO量化助手 | 2026-05-30 19:03 | 数据：东方财富妙想 | ⚠️不构成投资建议</div>
+</body>
+</html>
