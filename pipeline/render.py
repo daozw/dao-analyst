@@ -143,3 +143,4 @@ def nightly(data):
         html+=f'<div class="card"><div class="card-head">💎 核心资产</div><table width="100%">{rows}</table></div>'
     html+=f'<div style="text-align:center;padding:12px;font-size:10px;color:#94a3b8">DAO V3 · 数据来源:腾讯/新浪行情</div>'
     html+='</div>'
+    return html
