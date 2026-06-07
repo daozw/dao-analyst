@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-情报资讯 V3.2 — 专业级市场情报
+晚间资讯 V3.2 — 专业级市场情报
 市场综述 + 温度计 + 板块轮动 + 资金流向 + 异动 + 持仓 + 风险提示
 """
 import sys, os, json, warnings, random
@@ -42,7 +42,7 @@ def run():
     cm = json.load(open(f'{BASE}/data/concept_map.json')) if os.path.exists(f'{BASE}/data/concept_map.json') else {}
     sm = json.load(open(f'{BASE}/data/sector_map_v2.json')) if os.path.exists(f'{BASE}/data/sector_map_v2.json') else {}
     
-    out = [f'🌙 情报资讯  {datetime.now().strftime("%Y-%m-%d %A")}']
+    out = [f'🌙 晚间资讯  {datetime.now().strftime("%Y-%m-%d %A")}']
     
     # ━━ 1. 大盘+温度 ━━
     from pipeline.fetcher import fetch_market
@@ -170,7 +170,25 @@ def run():
 '):
             out.append(line)
     
-    # ━━ 9. 明日风险提示 ━━
+    # ━━ 9. 实盘持仓 ━━
+    rp_file = os.path.expanduser('~/dao-analyst/data/real_positions.json')
+    if os.path.exists(rp_file):
+        rp = json.load(open(rp_file))
+        out.append(f'\n💼 实盘持仓')
+        from pipeline.fetcher import fetch
+        total_rv = 0; total_rp = 0
+        for pos in rp.get('positions', []):
+            d = fetch(pos['code'], use_cache=False)
+            if 'error' not in d:
+                pnl = (d['price'] - pos['cost']) * pos['shares']
+                pnl_pct = (d['price']/pos['cost']-1)*100
+                total_rv += d['price'] * pos['shares']
+                total_rp += pnl
+                a = '🔴' if pnl > 0 else '🟢'
+                out.append(f'  {a}{pos["name"]} {pos["shares"]}股 ¥{d["price"]:.2f} {pnl_pct:+.1f}%')
+        out.append(f'  市值¥{total_rv:,.0f} 盈亏¥{total_rp:+,.0f}')
+    
+    # ━━ 10. 明日风险提示 ━━
     risks = []
     if '防御主导' in temp.get('level',''):
         risks.append('⚠️ 防御主导 → 科技股回避，控制仓位')
