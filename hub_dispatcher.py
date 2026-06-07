@@ -36,7 +36,7 @@ def screen_all():
             existing.add(s['code'])
     
     # 价值扫描(低PE) + 异动扫描(涨幅+放量)
-    sample = random.Random(int(datetime.now().strftime('%Y%m%d'))).sample(codes, min(500, len(codes)))
+    sample = random.Random(int(datetime.now().strftime('%Y%m%d'))).sample(codes, min(600, len(codes)))
     
     candidates = []
     t0 = time.time()
