@@ -37,28 +37,32 @@ def run():
     except:
         temp = {'level':'⚪未知','def_avg':0,'off_avg':0}
     
-    # Scan
-    sample = random.Random(42).sample(codes, min(200, len(codes)))
+    # 新浪API: 全市场真实涨幅排名(非随机)
+    import urllib.request as ur
     results = []; concept_up = Counter(); concept_down = Counter()
+    total_scanned = 0
     
-    for code in sample:
-        try:
-            df = q.bars(symbol=code, frequency=9, start=0, offset=2)
-            if df is None or df.empty or len(df) < 2: continue
-            df = df.sort_index()
-            chg = (float(df.iloc[-1]['close'])/float(df.iloc[-2]['close'])-1)*100
-            vr = float(df.iloc[-1]['volume'])/float(df.iloc[-2]['volume']) if float(df.iloc[-2]['volume'])>0 else 1
-            if abs(chg) < 2 and vr <= 3: continue
-            price = float(df.iloc[-1]['close'])
-            sec = sm.get(code,'综合'); conc = cm.get(code,[])
-            
-            for c in conc:
-                if chg > 2: concept_up[c] += 1
-                elif chg < -2: concept_down[c] += 1
-            
-            results.append({'code':code,'name':names.get(code,''),'chg':round(chg,2),
-                'price':price,'sec':sec,'conc':conc[0] if conc else '-','vr':vr})
-        except: pass
+    try:
+        for sort_dir in ['0', '1']:  # 0=涨幅榜 1=跌幅榜
+            url = f'https://vip.stock.finance.sina.com.cn/quotes_service/api/json_v2.php/Market_Center.getHQNodeData?page=1&num=80&sort=changepercent&asc={sort_dir}&node=hs_a&symbol='
+            req = ur.Request(url, headers={'Referer':'https://finance.sina.com.cn','User-Agent':'Mozilla/5.0'})
+            data = json.loads(ur.urlopen(req, timeout=10).read().decode('gbk'))
+            for s in data:
+                code = s.get('code','')
+                if not (code.startswith(('60','00')) and not code.startswith('688')): continue
+                chg = float(s.get('changepercent',0))
+                price = float(s.get('trade',0))
+                if abs(chg) < 1.5: continue  # 过滤微幅波动
+                sec = sm.get(code,'综合'); conc = cm.get(code,[])
+                
+                for c in conc:
+                    if chg > 1.5: concept_up[c] += 1
+                    elif chg < -1.5: concept_down[c] += 1
+                
+                total_scanned += 1
+                results.append({'code':code,'name':s.get('name',''),'chg':round(chg,2),
+                    'price':price,'sec':sec,'conc':conc[0] if conc else sec if sec!='综合' else '-','vr':0})
+    except: pass
     
     # ━━ 大盘 ━━
     up_n = sum(1 for r in results if r['chg']>0)
@@ -69,12 +73,26 @@ def run():
     
     out.append(f'\n━━ 📊 大盘 ━━')
     out.append(f'上证 {idx.get("price","-")}  {idx_chg:+.2f}%  {direction}')
-    out.append(f'涨跌比 {up_n/max(down_n,1):.1f}  涨{up_n} 跌{down_n}  涨停{lu} 跌停{ld}')
+    out.append(f'涨跌比 {up_n/max(down_n,1):.1f}  涨{up_n} 跌{down_n}  涨停{lu} 跌停{ld}  (新浪实时排名)')
+    # 技术位
+    try:
+        import numpy as np
+        idx_df = q.bars(symbol='000001', frequency=9, start=0, offset=60)
+        if idx_df is not None and len(idx_df) >= 20:
+            idx_df = idx_df.sort_index()
+            idx_closes = [float(c) for c in idx_df['close'].values]
+            ma20_idx = sum(idx_closes[-20:])/20
+            ma60_idx = sum(idx_closes[-60:])/60 if len(idx_closes)>=60 else sum(idx_closes)/len(idx_closes)
+            high20 = max(float(h) for h in idx_df['high'].values[-20:])
+            low20 = min(float(l) for l in idx_df['low'].values[-20:])
+            out.append(f'支撑 ¥{low20:.0f}  压力 ¥{high20:.0f}  MA20 ¥{ma20_idx:.0f}')
+    except: pass
     
     # ━━ 温度 ━━
     out.append(f'\n━━ 🌡️ 温度 ━━')
     out.append(f'{temp["level"]}')
-    out.append(f'  防御 +{temp["def_avg"]:.1f}%  vs  进攻 {temp["off_avg"]:+.1f}%')
+    out.append(f'  防御 +{temp["def_avg"]:.1f}%  (银行/石油/白酒/保险)')
+    out.append(f'  进攻 {temp["off_avg"]:+.1f}%  (半导体/AI/新能源/军工)')
     
     # ━━ 概念 ━━
     hot_c = [(c,n) for c,n in concept_up.most_common(5) if n>0 and c not in ['综合','-']]
@@ -103,6 +121,27 @@ def run():
     for r in down[:4]:
         f='🟢' if r['chg']<=-5 else '⚪'
         out.append(f'{f} {r["name"]:<6}  {r["code"]}  {r["chg"]:>+5.1f}%  ¥{r["price"]:.2f}  {r["sec"]}|{r["conc"]}')
+    
+    # ━━ 成交额 ━━
+    try:
+        import urllib.request as ur
+        url = "https://vip.stock.finance.sina.com.cn/quotes_service/api/json_v2.php/Market_Center.getHQNodeData?page=1&num=3&sort=amount&asc=0&node=hs_a&symbol="
+        req = ur.Request(url, headers={"Referer":"https://finance.sina.com.cn","User-Agent":"Mozilla/5.0"})
+        raw = ur.urlopen(req, timeout=8).read().decode("gbk")
+        stocks = json.loads(raw)
+        items = []
+        for s in stocks:
+            code = s.get('code','')
+            if code.startswith(('60','00')) and not code.startswith('688'):
+                amt = float(s.get('amount',0))/1e8
+                chg = float(s.get('changepercent',0))
+                a = '🔴' if chg>0 else '🟢'
+                items.append(f'{a} {s["name"]} ¥{amt:.0f}亿 {chg:+.1f}%')
+        if items:
+            out.append(f'\n────────\n💰 成交额')
+            for item in items[:3]:
+                out.append(item)
+    except: pass
     
     # ━━ 要闻 ━━
     from news_aggregator import get_market_news
