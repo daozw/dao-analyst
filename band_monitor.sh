@@ -37,7 +37,7 @@ elif echo "$TEMP" | grep -q "防御抬头"; then
     .venv/bin/python3 pipeline/autotrade.py --real 2>&1
 
 elif [ "$HOUR" = "14" ] && [ "$MIN" = "50" ]; then
-    # 14:50 尾盘仅止损
+    # 14:50 尾盘正常交易(安全检查已覆盖追高/跌停)
     .venv/bin/python3 pipeline/autotrade.py --real 2>&1
 else
     # 正常交易

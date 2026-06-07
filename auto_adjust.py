@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""自动调仓 V1.0 — 根据信号自动管理波段池和价值池"""
+"""池子维护 V1.0 — 根据信号自动管理波段池和价值池"""
 import sys, os, json
 from datetime import datetime
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -71,6 +71,31 @@ def auto_adjust():
     
     wl['groups']['value']['stocks'] = keep_value
     
+    # ━━ 打板池维护 ━━
+    board = wl['groups'].get('board', {}).get('stocks', [])
+    keep_board = []
+    for s in board:
+        d = fetch(s['code'], use_cache=False)
+        if 'error' in d:
+            keep_board.append(s); continue
+        
+        chg = d['chg']; price = d['price']
+        
+        # 涨停 → 保留
+        if chg >= 9.8:
+            keep_board.append(s)
+        # 连续3天没涨停且信号<2 → 移出
+        elif chg < 3 and s.get('days_without_board', 0) >= 3:
+            changes.append(f'🔴 打板池 {s["name"]}({s["code"]}) 3天未封板 → 移入观察池')
+            watch = wl['groups'].setdefault('watch', {"name": "👀 观察池", "desc": "待确认信号", "stocks": []})
+            if not any(x['code'] == s['code'] for x in watch['stocks']):
+                watch['stocks'].append({"code": s['code'], "name": s['name'], "note": "打板池移出·3天未封板"})
+        else:
+            s['days_without_board'] = s.get('days_without_board', 0) + (0 if chg >= 9.8 else 1)
+            keep_board.append(s)
+    
+    wl['groups']['board']['stocks'] = keep_board
+    
     # ━━ 3. 观察池 → 波段池升级 ━━
     watch = wl['groups'].get('watch', {}).get('stocks', [])
     keep_watch = []
@@ -106,7 +131,7 @@ def auto_adjust():
     with open(STATE_FILE, 'w') as f:
         json.dump(state, f, ensure_ascii=False, indent=2)
     
-    print(f'🔄 自动调仓 {datetime.now().strftime("%H:%M")}')
+    print(f'🔄 池子维护 {datetime.now().strftime("%H:%M")}')
     print(f'  波段池 {len(wl["groups"]["band"]["stocks"])}只')
     print(f'  价值池 {len(wl["groups"]["value"]["stocks"])}只')
     print(f'  观察池 {len(wl["groups"]["watch"]["stocks"])}只')

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-中枢分配器 V1.0 — 观察池→特征匹配→分配到核心/波段/打板
+选股引擎 V1.0 — 观察池→特征匹配→分配到核心/波段/打板
 """
 import sys, os, json, warnings, random, time
 from datetime import datetime
@@ -87,7 +87,7 @@ def screen_all():
 
 
 def dispatch(candidates):
-    """中枢分配: 根据特征分到核心/波段/打板"""
+    """选股引擎: 根据特征分到核心/波段/打板"""
     wl = json.load(open(WATCHLIST))
     
     core = wl['groups']['core']['stocks']
@@ -143,12 +143,25 @@ def dispatch(candidates):
 
 
 def run_hub():
-    """中枢分配主流程"""
-    print(f'🎯 中枢分配器 {datetime.now().strftime("%H:%M")}')
+    """选股引擎主流程"""
+    print(f'🎯 选股引擎 {datetime.now().strftime("%H:%M")}')
     print('='*50)
     
     print('📡 Step 1/3: 全市场扫描...')
+    # 全市场扫描
     candidates = screen_all()
+    
+    # 加载增长扫描结果
+    gf = os.path.expanduser('~/dao-analyst/data/state/growth.json')
+    if os.path.exists(gf):
+        try:
+            gdata = json.load(open(gf))
+            growth_codes = set(gdata.get('picks', []))
+            # 增长候选已在candidates中则加分,不在则补充
+            for c in candidates:
+                if c['code'] in growth_codes:
+                    c['quality'] = c.get('quality', 0) + 10  # 增长加分
+        except: pass
     print(f'  初筛 {len(candidates)} 只候选')
     
     if not candidates:
@@ -178,7 +191,7 @@ def run_hub():
         json.dump(state, f, ensure_ascii=False, indent=2)
     
     print(f'\n{"="*50}')
-    print(f'筛选→观察→中枢分配→核心/波段/打板')
+    print(f'筛选→观察→选股引擎→核心/波段/打板')
 
 
 if __name__ == "__main__":

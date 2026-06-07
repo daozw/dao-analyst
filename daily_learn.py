@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-每日自学习 V1.0 — 从交易结果中学习并优化
+每日交易分析 V1.0 — 从交易结果中学习并优化
 追踪: 胜率·盈亏比·板块表现·时段质量·参数自适应
 """
 import sys, os, json, urllib.request, ssl
@@ -143,8 +143,8 @@ def generate_insights(learning, trades):
     return insights
 
 def run():
-    """每日自学习主流程"""
-    print(f'🧠 每日自学习 {datetime.now().strftime("%Y-%m-%d %H:%M")}')
+    """每日交易分析主流程"""
+    print(f'🧠 每日交易分析 {datetime.now().strftime("%Y-%m-%d %H:%M")}')
     print('='*45)
     
     learning = load_learning()
@@ -163,6 +163,11 @@ def run():
     if learning['total_trades'] > 0:
         wr = learning['wins']/learning['total_trades']*100
         print(f'\n📈 历史累计: {learning["total_trades"]}笔 胜率{wr:.0f}% 盈亏¥{learning["total_pnl"]:+,.0f}')
+    
+    # 记录到A/B测试
+    for t in trades:
+        from strategy_ab import record_trade
+        record_trade('A', t['pnl'], t['pnl'] > 0)
     
     save_learning(learning)
     print(f'\n✅ 学习数据已保存')

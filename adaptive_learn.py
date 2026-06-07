@@ -46,6 +46,13 @@ def analyze_and_adapt():
     
     win_rate = wins / total * 100
     
+    # 规则0: 月考核硬指标
+    if total >= 10 and win_rate < 40:
+        changes.append(f'🚨 月考核: 胜率{win_rate:.0f}%<40% → 强制收紧')
+        # 直接跳到最保守参数
+        params['min_signal']['current'] = min(params['min_signal']['current'] + 1, params['min_signal']['max'])
+        params['risk_per_trade']['current'] = max(params['risk_per_trade']['current'] - 200, params['risk_per_trade']['min'])
+    
     # 规则1: 胜率过低→收紧条件
     if win_rate < 35:
         new_sig = min(params['min_signal']['current'] + 1, params['min_signal']['max'])

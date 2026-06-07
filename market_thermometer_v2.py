@@ -220,6 +220,34 @@ def report():
     return temp
 
 
+
+def get_rsi(symbol='000001', period=14):
+    """RSI指标"""
+    try:
+        from mootdx.quotes import Quotes
+        q = Quotes.factory(market='std')
+        df = q.bars(symbol=symbol, frequency=9, start=0, offset=period+5)
+        if df is None or df.empty or len(df) < period: return None
+        df = df.sort_index()
+        closes = [float(c) for c in df['close'].values]
+        gains = [max(0, closes[i]-closes[i-1]) for i in range(1,len(closes))]
+        losses = [max(0, closes[i-1]-closes[i]) for i in range(1,len(closes))]
+        avg_gain = sum(gains[-period:])/period
+        avg_loss = sum(losses[-period:])/period
+        if avg_loss == 0: return 100
+        rs = avg_gain/avg_loss
+        return round(100 - 100/(1+rs), 1)
+    except: return None
+
+def rsi_signal(rsi):
+    if rsi is None: return '⚪', '无数据'
+    if rsi >= 80: return '🔴', f'RSI{rsi} 严重超买,警惕回调'
+    elif rsi >= 70: return '🟠', f'RSI{rsi} 超买区间'
+    elif rsi <= 20: return '🟢', f'RSI{rsi} 严重超卖,反弹机会'
+    elif rsi <= 30: return '🟡', f'RSI{rsi} 超卖区间'
+    return '✅', f'RSI{rsi} 正常'
+
 if __name__ == '__main__':
+
     temp = report()
     backtest_data = backtest(6)

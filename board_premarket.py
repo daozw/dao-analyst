@@ -113,6 +113,18 @@ def scan():
             if resp.get("ok"):
                 lines.append(f"  ✅ {s['name']} {qty}股 @涨停¥{s['limit_up']:.2f}")
                 orders_placed += 1
+                # 记录到日状态,避免WebSocket重复买入
+                try:
+                    import json as _j, os as _os
+                    _sf = _os.path.expanduser('~/dao-analyst/data/state/board_trade.json')
+                    _st = _j.load(open(_sf)) if _os.path.exists(_sf) else {'date':'','stocks':[]}
+                    _today = __import__('datetime').datetime.now().strftime('%Y-%m-%d')
+                    if _st.get('date') != _today:
+                        _st = {'date':_today, 'stocks':[]}
+                    _st['stocks'].append({'code':s['code'],'name':s['name'],'qty':qty,'price':s['limit_up']})
+                    _os.makedirs(_os.path.dirname(_sf), exist_ok=True)
+                    _j.dump(_st, open(_sf,'w'), ensure_ascii=False, indent=2)
+                except: pass
                 
                 # 通知
                 alerts = []
