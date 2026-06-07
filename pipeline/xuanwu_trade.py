@@ -56,6 +56,8 @@ def save_daily_state(state):
 
 
 def htsc_trade(signals, dry_run=True):
+    # T+1: 当日买入的股票不能卖出
+    today_bought = {s["code"] for s in state["stocks"]} if "state" in dir() else set()
     """
     华泰侧交易执行
     signals: [{"code": "000001", "name": "平安银行", "price": 12.50, "signal": 5, "shares": 400}, ...]

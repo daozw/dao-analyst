@@ -618,5 +618,45 @@
     "quantity": 1500,
     "amount": 3990.0,
     "result": "卖出委托失败: 委托失败，可用数量不足"
+  },
+  {
+    "time": "2026-06-05 18:57:21",
+    "action": "SELL",
+    "code": "000600",
+    "name": "建投能源",
+    "price": 11.48,
+    "quantity": 100,
+    "amount": 1148.0,
+    "result": "成功"
+  },
+  {
+    "time": "2026-06-05 18:57:22",
+    "action": "SELL",
+    "code": "600439",
+    "name": "瑞贝卡",
+    "price": 2.64,
+    "quantity": 1500,
+    "amount": 3960.0,
+    "result": "成功"
+  },
+  {
+    "time": "2026-06-05 19:41:28",
+    "action": "SELL",
+    "code": "000600",
+    "name": "建投能源",
+    "price": 11.48,
+    "quantity": 100,
+    "amount": 1148.0,
+    "result": "卖出委托失败: 委托失败，可用数量不足"
+  },
+  {
+    "time": "2026-06-05 19:41:29",
+    "action": "SELL",
+    "code": "600439",
+    "name": "瑞贝卡",
+    "price": 2.64,
+    "quantity": 1500,
+    "amount": 3960.0,
+    "result": "卖出委托失败: 委托失败，可用数量不足"
   }
 ]

@@ -79,6 +79,7 @@ def _exec_trade(action, code, name, price, qty, dry_run=True):
     ok = resp.get("code") == "200"
     from pipeline.trade_notify import notify_trade
     notify_trade(action, code, name, price, qty, "成功" if ok else resp.get("message","失败"))
+    notify_trade(action, code, name, price, qty, "成功" if ok else resp.get("message","失败"))
     return ok, f"{'✅' if ok else '❌'} {action} {name}({code}) {qty}股 @¥{price:.2f} = ¥{value:,.0f}"
 
 

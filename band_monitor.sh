@@ -4,23 +4,42 @@ cd /Users/sound/dao-analyst
 HOUR=$(date +%H)
 MIN=$(date +%M)
 
-# 市场情绪检查
-SENTIMENT=$(.venv/bin/python3 -c "from market_sentiment import get_market_sentiment; print(get_market_sentiment()[0])" 2>/dev/null)
+# 市场温度检查
+TEMP=$(.venv/bin/python3 -c "from market_thermometer_v2 import get_thermometer; t=get_thermometer(); print(t['level'])" 2>/dev/null)
 
-if [ "$SENTIMENT" = "🔴谨慎" ]; then
-    echo "🔴 市场谨慎 暂停交易"
-    exit 0
-fi
-
-# 14:50 尾盘特殊处理: 只检查止损,不新开仓
-if [ "$HOUR" = "14" ] && [ "$MIN" = "50" ]; then
+if echo "$TEMP" | grep -q "防御主导"; then
+    echo "🔴 防御主导 暂停波段买入"
+    # 只检查止损，不新开仓
     .venv/bin/python3 -c "
 import sys; sys.path.insert(0,'.')
 from pipeline.autotrade import auto_trade
-# 尾盘仅止损模式
+# 仅止损模式
 result, _ = auto_trade(dry_run='--real' not in '')
 print(result)
 " 2>&1
+    
+    # 通知
+    .venv/bin/python3 -c "
+import json, os
+from datetime import datetime
+af='/tmp/dao_trade_alerts.json'
+alerts=[]
+if os.path.exists(af):
+    try: alerts=json.load(open(af))
+    except: pass
+alerts.append({'time':datetime.now().strftime('%H:%M:%S'),'action':'THERMO',
+    'message':'🔴 防御主导 暂停买入','sent':False})
+with open(af,'w') as f: json.dump(alerts,f,ensure_ascii=False,indent=2)
+" 2>/dev/null
+
+elif echo "$TEMP" | grep -q "防御抬头"; then
+    echo "🟠 防御抬头 半仓运行"
+    .venv/bin/python3 pipeline/autotrade.py --real 2>&1
+
+elif [ "$HOUR" = "14" ] && [ "$MIN" = "50" ]; then
+    # 14:50 尾盘仅止损
+    .venv/bin/python3 pipeline/autotrade.py --real 2>&1
 else
+    # 正常交易
     .venv/bin/python3 pipeline/autotrade.py --real 2>&1
 fi
