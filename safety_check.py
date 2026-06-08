@@ -58,7 +58,7 @@ class SafetyCheck:
             return self._ok('⚠️ 温度计不可用,跳过')
     
     # ━━ 2. 仓位检查 ━━
-    def check_position(self, entry_price, stop_price, total_cap=20000):
+    def check_position(self, entry_price, stop_price, total_cap=50000):
         """仓位公式校验"""
         if entry_price <= stop_price:
             return self._fail('❌ 买入价≤止损价')

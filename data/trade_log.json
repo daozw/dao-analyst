@@ -658,5 +658,185 @@
     "quantity": 1500,
     "amount": 3960.0,
     "result": "卖出委托失败: 委托失败，可用数量不足"
+  },
+  {
+    "time": "2026-06-08 09:32:21",
+    "action": "SELL",
+    "code": "000065",
+    "name": "北方国际",
+    "price": 11.96,
+    "quantity": 400,
+    "amount": 4784.0,
+    "result": "成功"
+  },
+  {
+    "time": "2026-06-08 09:32:21",
+    "action": "SELL",
+    "code": "000065",
+    "name": "北方国际",
+    "price": 11.96,
+    "quantity": 400,
+    "amount": 4784.0,
+    "result": "成功"
+  },
+  {
+    "time": "2026-06-08 09:32:22",
+    "action": "SELL",
+    "code": "000543",
+    "name": "皖能电力",
+    "price": 8.84,
+    "quantity": 600,
+    "amount": 5304.0,
+    "result": "成功"
+  },
+  {
+    "time": "2026-06-08 09:32:22",
+    "action": "SELL",
+    "code": "000543",
+    "name": "皖能电力",
+    "price": 8.84,
+    "quantity": 600,
+    "amount": 5304.0,
+    "result": "成功"
+  },
+  {
+    "time": "2026-06-08 09:32:23",
+    "action": "SELL",
+    "code": "000600",
+    "name": "建投能源",
+    "price": 11.37,
+    "quantity": 100,
+    "amount": 1137.0,
+    "result": "卖出委托失败: 委托失败，可用数量不足"
+  },
+  {
+    "time": "2026-06-08 09:32:23",
+    "action": "SELL",
+    "code": "000600",
+    "name": "建投能源",
+    "price": 11.37,
+    "quantity": 100,
+    "amount": 1137.0,
+    "result": "卖出委托失败: 委托失败，可用数量不足"
+  },
+  {
+    "time": "2026-06-08 09:51:14",
+    "action": "BUY",
+    "code": "605319",
+    "name": "无锡振华",
+    "price": 28.0,
+    "quantity": 200,
+    "amount": 5600.0,
+    "result": "成功"
+  },
+  {
+    "time": "2026-06-08 09:51:14",
+    "action": "BUY",
+    "code": "605319",
+    "name": "无锡振华",
+    "price": 28.0,
+    "quantity": 200,
+    "amount": 5600.0,
+    "result": "成功"
+  },
+  {
+    "time": "2026-06-08 09:51:15",
+    "action": "BUY",
+    "code": "605319",
+    "name": "无锡振华",
+    "price": 28.0,
+    "quantity": 200,
+    "amount": 5600.0,
+    "result": "成功"
+  },
+  {
+    "time": "2026-06-08 09:51:15",
+    "action": "BUY",
+    "code": "605319",
+    "name": "无锡振华",
+    "price": 28.0,
+    "quantity": 200,
+    "amount": 5600.0,
+    "result": "成功"
+  },
+  {
+    "time": "2026-06-08 09:51:16",
+    "action": "BUY",
+    "code": "603201",
+    "name": "常润股份",
+    "price": 18.36,
+    "quantity": 300,
+    "amount": 5508.0,
+    "result": "成功"
+  },
+  {
+    "time": "2026-06-08 09:51:16",
+    "action": "BUY",
+    "code": "603201",
+    "name": "常润股份",
+    "price": 18.36,
+    "quantity": 300,
+    "amount": 5508.0,
+    "result": "成功"
+  },
+  {
+    "time": "2026-06-08 09:51:16",
+    "action": "BUY",
+    "code": "603201",
+    "name": "常润股份",
+    "price": 18.36,
+    "quantity": 300,
+    "amount": 5508.0,
+    "result": "成功"
+  },
+  {
+    "time": "2026-06-08 09:51:16",
+    "action": "BUY",
+    "code": "603201",
+    "name": "常润股份",
+    "price": 18.36,
+    "quantity": 300,
+    "amount": 5508.0,
+    "result": "成功"
+  },
+  {
+    "time": "2026-06-08 10:36:08",
+    "action": "SELL",
+    "code": "603210",
+    "name": "泰鸿万立",
+    "price": 14.73,
+    "quantity": 500,
+    "amount": 7365.0,
+    "result": "成功"
+  },
+  {
+    "time": "2026-06-08 10:36:08",
+    "action": "SELL",
+    "code": "603210",
+    "name": "泰鸿万立",
+    "price": 14.73,
+    "quantity": 500,
+    "amount": 7365.0,
+    "result": "成功"
+  },
+  {
+    "time": "2026-06-08 13:15:51",
+    "action": "BUY",
+    "code": "601011",
+    "name": "宝泰隆",
+    "price": 3.26,
+    "quantity": 2000,
+    "amount": 6520.0,
+    "result": "成功"
+  },
+  {
+    "time": "2026-06-08 13:15:51",
+    "action": "BUY",
+    "code": "601011",
+    "name": "宝泰隆",
+    "price": 3.26,
+    "quantity": 2000,
+    "amount": 6520.0,
+    "result": "成功"
   }
 ]

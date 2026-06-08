@@ -88,7 +88,32 @@ async def connect():
                             board_codes = {s['code'] for s in wl['groups'].get('board',{}).get('stocks',[])}
                             band_codes = {s['code'] for s in wl['groups'].get('band',{}).get('stocks',[])}
                             
-                            # 打板: 涨幅≥8%
+                                            # 全市场打板实时扫描(每90秒)
+                if time.time() - last_board_scan > 90:
+                    last_board_scan = time.time()
+                    try:
+                        import urllib.request as ur
+                        url = "https://vip.stock.finance.sina.com.cn/quotes_service/api/json_v2.php/Market_Center.getHQNodeData?page=1&num=50&sort=changepercent&asc=0&node=hs_a&symbol="
+                        req = ur.Request(url, headers={"Referer":"https://finance.sina.com.cn","User-Agent":"Mozilla/5.0"})
+                        raw = ur.urlopen(req, timeout=5).read().decode("gbk")
+                        all_stocks = json.loads(raw)
+                        for s in all_stocks:
+                            code = s.get("code","")
+                            if not code.startswith(("60","00")) or code.startswith("688"): continue
+                            if "ST" in s.get("name","") or "退" in s.get("name",""): continue
+                            chg_pct = float(s.get("changepercent",0))
+                            if chg_pct >= 8 and chg_pct < 10:  # 未封板但接近
+                                name = s.get("name","")
+                                price = float(s.get("trade",0))
+                                if code not in known_board_signals:
+                                    known_board_signals.add(code)
+                                    print(f'  🔥 实时板信号: {name}({code}) ¥{price:.2f} +{chg_pct:.1f}%')
+                                    alerts.append({"time":now,"action":"BOARD_REALTIME","code":code,"name":name,
+                                        "message":f'🔥 实时打板信号 {name}({code}) ¥{price:.2f} +{chg_pct:.1f}%','sent':False})
+                    except Exception as e:
+                        print(f'  板扫异常: {e}')
+                
+                # 打板: 涨幅≥8%
                             if code in board_codes and chg >= 8:
                                 # 检查竞价是否已挂单
                                 sf = os.path.expanduser('~/dao-analyst/data/state/board_trade.json')
