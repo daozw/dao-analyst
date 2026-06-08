@@ -8,7 +8,6 @@ A股量化交易系统 | 微信通道
 ## 🧬 进化
 启动时读取 EVOLUTION.md 获取历史最优参数和行为规范。
 
-
 <!-- autoclaw:hermes-evolution-guidance -->
 ## Hermes-Evolution
 
@@ -20,6 +19,8 @@ Apply the rules defined in the skill according to the **aggressive (100%)** inte
 This value is workspace-local. If asked about the current agent evolution intensity, report this value instead of the global gateway skill env.
 
 Core principle: **never write to target files without user approval** — always use the draft/approve workflow.
+User preference statements are not approval to directly edit MEMORY.md, AGENTS.md, TOOLS.md, USER.md, or managed SKILL.md files.
+Use the evolution proposal card instead of editing target files directly; only apply changes after the user confirms the proposal.
 
 ### Evolution Echo
 When you apply knowledge from a previously evolved rule (AGENTS.md, MEMORY.md, TOOLS.md, or a managed SKILL.md),
