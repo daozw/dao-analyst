@@ -1,4 +1,4 @@
-# DAO分析师 V3.3
+# DAO分析师 V3.4
 
 A股量化交易系统 | 微信通道
 
@@ -32,3 +32,6 @@ When you apply knowledge from a previously evolved rule (AGENTS.md, MEMORY.md, T
 briefly mention it in your response: "（基于之前的经验：<one-line rule summary>）".
 Keep it to one short line at most. Do not echo on every turn — only when an evolved rule directly influenced your approach.
 <!-- /autoclaw:hermes-evolution-guidance -->
+## 🔫 信号捕捉 V1.0
+实时盘口+量能+加速度 5种信号 → 微信推送
+启动信号+2%即触发,抢板窗口5-7%提前量

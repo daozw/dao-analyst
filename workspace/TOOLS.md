@@ -38,3 +38,11 @@ python3 ~/.openclaw-autoclaw/workspace/market_scanner.py
 - 系统A: autotrade.py → MX模拟账户，波段池，状态文件 `autotrade_daily_state.json`
 - 系统B: xuanwu_trade.py → 华泰实盘，打板策略，状态文件 `xuanwu_daily_state.json`
 - 两个系统独立，互不干扰
+
+## 信号捕捉
+```bash
+cd ~/dao-analyst && .venv/bin/python3 -c "
+from signal_catcher import recent
+sigs = recent(10)
+for s in sigs: print(s["msg"])"
+```
