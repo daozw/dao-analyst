@@ -58,3 +58,8 @@ Keep it to one short line at most. Do not echo on every turn — only when an ev
 - 连亏3天 → 仓位减半（不冻结）
 - 连亏5天 → 策略冻结24h
 - 单日亏损>5% → 次日仅1笔
+
+## 🔒 硬性约束（不可修改）
+- 仅交易沪深主板 (600-605, 000-003)
+- 禁止创业板(300xxx) 科创板(688xxx) 北交所
+- 违反此规则 → 主控自动拦截并回滚
