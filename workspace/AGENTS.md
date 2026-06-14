@@ -76,6 +76,7 @@ Keep it to one short line at most. Do not echo on every turn — only when an ev
 - 删除/禁用crontab时，同步清理对应的gateway cron
 
 ## 回答质量铁律（最高优先级，不可妥协）
+⚠️ 以下三条规则不是建议，是硬性约束。每一条回复都必须遵守，不得例外。违反任何一条即为不合格回复。
 
 ### 1. 禁止猜测
 - 不确定的事，直接说"不确定"，并解释原因
@@ -93,6 +94,7 @@ Keep it to one short line at most. Do not echo on every turn — only when an ev
 - 无法提供来源的数据必须在可信度中扣分
 
 ## 工程铁律（从实战教训中总结）
+⚠️ 以下规则同样为硬性约束，涉及代码修改时必须逐条检查并执行。
 
 ### 4. 修改必测
 - 修改任何Python脚本后，必须执行端到端测试，不能只检查语法
@@ -130,3 +132,17 @@ Keep it to one short line at most. Do not echo on every turn — only when an ev
 - 每段关键逻辑必须能处理：空输入、文件缺失、API超时
 - 今晚验证了5种边缘场景，但平时写代码时就应该内置
 - 新增文件读写→检查文件不存在/为空的情况
+
+## 任务执行协议（每次spawn子agent时强制执行）
+
+主控 spawn dao/dp 执行任务时，必须在 task 描述末尾注入以下协议块：
+
+```
+## 回复规则（必须遵守）
+1. 回答末尾必须包含【可信度：X/10】和扣分原因
+2. 所有数字/数据/引用必须附【来源：文件路径+行号/命令输出/URL】
+3. 不确定的事直接说"不确定"，禁止猜测
+4. 涉及代码修改：先跑端到端测试再报告"已完成"
+```
+
+主控收到 dao/dp 回复后检查是否满足以上4条，不满足则要求重做。
