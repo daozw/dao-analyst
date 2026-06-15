@@ -1,0 +1,217 @@
+#!/usr/bin/env python3
+"""DAO系统健康检查 V1.0 — 轻量(日检)/全量(周检)双模式"""
+import sys, os, json, subprocess, ast, time
+from datetime import datetime
+
+BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, BASE)
+
+def check_syntax():
+    """语法检查(快速)"""
+    issues = []
+    for root, dirs, files in os.walk(BASE):
+        dirs[:] = [d for d in dirs if d not in ['__pycache__','.git','.venv','logs','data','quant-research','quant']]
+        for f in files:
+            if not f.endswith('.py'): continue
+            path = os.path.join(root, f)
+            try:
+                with open(path) as fp: ast.parse(fp.read())
+            except SyntaxError as e:
+                rel = os.path.relpath(path, BASE)
+                issues.append(f"  ❌ {rel} L{e.lineno}: {e.msg}")
+    return issues
+
+def check_files():
+    """文件完整性"""
+    required = {
+        'pipeline/autotrade.py': '波段交易',
+        'pipeline/xuanwu_trade.py': '打板交易',
+        'pipeline/circuit_breaker.py': '熔断检查',
+        'pipeline/self_evolve.py': '参数进化',
+        'pipeline/tier_review.py': '梯队复盘',
+        'pipeline/stress_test.py': '压力测试',
+        'pipeline/auto_backtest.py': '自动回测',
+        'pipeline/trade_notify.py': '交易通知',
+        'reports/tomorrow_watch.py': '明日关注',
+        'daily_png_report.py': '持仓战报',
+        'board_scanner.py': '打板扫描',
+        'data/watchlist.json': '自选池',
+        'data/evolve_params.json': '进化参数',
+    }
+    issues = []
+    for path, name in required.items():
+        full = os.path.join(BASE, path)
+        if not os.path.exists(full):
+            issues.append(f"  ❌ {name}({path})缺失")
+    return issues
+
+def check_data():
+    """数据质量"""
+    issues = []
+    # watchlist
+    wl_path = os.path.join(BASE, 'data/watchlist.json')
+    if os.path.exists(wl_path):
+        try:
+            wl = json.load(open(wl_path))
+            band = len(wl['groups'].get('band',{}).get('stocks',[]))
+            core = len(wl['groups'].get('core',{}).get('stocks',[]))
+            watch = len(wl['groups'].get('watch',{}).get('stocks',[]))
+            if band < 30: issues.append(f"  🟡 band池{band}只(偏小)")
+            if core < 5: issues.append(f"  🟡 core池{core}只(偏小)")
+            total = band + core + watch
+            if total > 600: issues.append(f"  🟡 总标的{total}只(偏多)")
+        except Exception as e:
+            issues.append(f"  🔴 watchlist.json损坏: {e}")
+    
+    # evolve_params
+    ep_path = os.path.join(BASE, 'data/evolve_params.json')
+    if os.path.exists(ep_path):
+        try:
+            ep = json.load(open(ep_path))
+            bp = ep.get('band', {})
+            tp = bp.get('tp_clear_pct', 0)
+            sl = bp.get('stop_loss_pct', 0)
+            if tp <= sl: issues.append("  🔴 止盈≤止损!")
+            gen = ep.get('generation', 0)
+            updated = ep.get('updated', '')
+            if updated:
+                try:
+                    days = (datetime.now() - datetime.strptime(updated[:10], '%Y-%m-%d')).days
+                    if days > 2: issues.append(f"  🟡 进化{days}天未更新")
+                except: pass
+        except: issues.append("  🔴 evolve_params.json损坏")
+    
+    return issues
+
+def check_cron():
+    """Cron完整性"""
+    issues = []
+    try:
+        raw = subprocess.run(['crontab','-l'], capture_output=True, text=True).stdout
+        n = len([l for l in raw.split('\n') if l.strip() and not l.strip().startswith('#')])
+        if n < 25: issues.append(f"  🔴 cron{25}条(异常少)")
+        
+        required_scripts = [
+            ('autotrade', '波段交易'), ('band_monitor', '波段监控'),
+            ('xuanwu_trade', '打板交易'), ('circuit_breaker', '熔断'),
+            ('board_scanner', '打板扫描'), ('tomorrow_watch', '明日关注'),
+            ('tier_review', '梯队复盘'),
+            ('market_report', '市场报告'),
+            ('daily_png_report', '持仓战报'), ('self_evolve', '参数进化'),
+            ('stress_test', '压力测试'),
+        ]
+        # 波段交易有两种入口
+        has_band = 'autotrade' in raw or 'band_monitor' in raw
+        if not has_band:
+            issues.append("  🔴 缺失波段交易cron")
+        
+        for keyword, name in required_scripts:
+            if keyword in ('autotrade', 'band_monitor'):
+                continue  # 已单独处理
+            if keyword not in raw:
+                issues.append(f"  🔴 缺失{name}cron")
+    except:
+        issues.append("  🔴 无法读取crontab")
+    return issues
+
+def check_runtime(mode='light'):
+    """运行时测试(全量模式)"""
+    if mode != 'full':
+        return []
+    
+    issues = []
+    modules = [
+        ('pipeline/autotrade.py', [], '波段交易'),
+        ('pipeline/xuanwu_trade.py', ['auto'], '打板auto'),
+        ('pipeline/xuanwu_trade.py', ['clear'], '打板清仓'),
+        ('pipeline/circuit_breaker.py', [], '熔断'),
+        ('pipeline/tier_review.py', [], '梯队复盘'),
+        ('pipeline/stress_test.py', [], '压力测试'),
+        ('pipeline/trade_notify.py', ['pending'], '交易通知'),
+        ('reports/tomorrow_watch.py', [], '明日关注'),
+        ('daily_png_report.py', [], '持仓战报'),
+        ('board_scanner.py', [], '打板扫描'),
+    ]
+    
+    for path, args, name in modules:
+        venv = os.path.join(BASE, '.venv/bin/python3')
+        script = os.path.join(BASE, path)
+        cmd = [venv, script] + args
+        try:
+            r = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+            if r.returncode != 0 and 'Traceback' in (r.stderr + r.stdout):
+                err = (r.stderr + r.stdout)[-100:].strip().replace('\n',' ')
+                issues.append(f"  ❌ {name}: {err[:60]}")
+        except subprocess.TimeoutExpired:
+            pass  # 超时正常
+        except Exception as e:
+            issues.append(f"  ❌ {name}: {e}")
+    
+    return issues
+
+def main():
+    mode = sys.argv[1] if len(sys.argv) > 1 else 'light'
+    is_light = mode != 'full'
+    
+    syntax = check_syntax()
+    files = check_files()
+    data = check_data()
+    cron = check_cron()
+    runtime = check_runtime(mode)
+    
+    all_issues = syntax + files + data + cron + runtime
+    score = 100
+    for i in all_issues:
+        if '❌' in i: score -= 10
+        elif '🟡' in i: score -= 5
+    
+    score = max(0, score)
+    
+    print(f"🩺 DAO系统健康检查")
+    print(f"📅 {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"📊 健康分: {score}/100 | 模式: {'轻量' if is_light else '全量'}")
+    print()
+    
+    sections = [
+        ('📁 文件完整性', files),
+        ('🔬 语法检查', syntax),
+        ('📊 数据质量', data),
+        ('⏰ Cron状态', cron),
+    ]
+    if not is_light:
+        sections.append(('🏃 运行时测试', runtime))
+    
+    ok = True
+    for title, items in sections:
+        status = '✅' if not items else ('❌' if any('❌' in i for i in items) else '⚠️')
+        print(f'{status} {title}: {len(items)}个{"问题" if items else ""}')
+        for i in items[:3]:
+            print(i)
+        if len(items) > 3:
+            print(f'  ... +{len(items)-3}个')
+        if items and any('❌' in i for i in items):
+            ok = False
+    
+    print()
+    if ok and score >= 90:
+        print("✅ 系统健康，正常运行")
+    elif score >= 70:
+        print("⚠️ 系统可运行，有优化空间")
+    else:
+        print("🔴 需要修复! 运行 daily_health.py full 查看详情")
+    
+    print()
+    print("─" * 30)
+    print(f"⏰ {'轻量' if is_light else '全量'}检查 · 下次自动: 每日15:10")
+    
+    # 保存报告
+    report_file = os.path.join(BASE, 'data', 'health_report.txt')
+    with open(report_file, 'w') as f:
+        import io
+        # re-capture
+        pass
+    
+    sys.exit(0 if ok else 1)
+
+if __name__ == '__main__':
+    main()

@@ -58,7 +58,22 @@ def _raw_fetch(code, full=False, use_cache=True):
         p = raw.split("~")
         d.update({"name":p[1],"price":float(p[3]),"chg":float(p[32]),"high":float(p[33]),
             "low":float(p[34]),"turnover":float(p[38]),"pe":float(p[39]) if p[39] else 0,
-            "amount":float(p[37]),"pre_close":float(p[4]),"vol":float(p[6]) if p[6] else 0})
+            "amount":float(p[37]),"pre_close":float(p[4]),"open":float(p[5]) if p[5] else 0,
+            "vol_ratio":float(p[49]) if len(p)>49 and p[49] else 1.0,
+            "vol":float(p[6]) if p[6] else 0,
+            # Level-2 5档盘口 (腾讯免费)
+            "bids": [{"price":float(p[9+i*2]) if len(p)>9+i*2 and p[9+i*2] else 0,
+                      "volume":int(float(p[10+i*2])) if len(p)>10+i*2 and p[10+i*2] else 0}
+                     for i in range(5)],
+            "asks": [{"price":float(p[19+i*2]) if len(p)>19+i*2 and p[19+i*2] else 0,
+                      "volume":int(float(p[20+i*2])) if len(p)>20+i*2 and p[20+i*2] else 0}
+                     for i in range(5)],
+            "inside_ratio":float(p[49]) if len(p)>49 and p[49] else 0,
+            "commission_ratio":float(p[62]) if len(p)>62 and p[62] else 0})
+        # 盘口汇总
+        d["bid_total"] = sum(b["volume"] for b in d["bids"])
+        d["ask_total"] = sum(a["volume"] for a in d["asks"])
+        d["imbalance_ratio"] = round((d["bid_total"] - d["ask_total"]) / max(d["bid_total"] + d["ask_total"], 1), 3)
     except: return {"error":"腾讯行情失败"}
     
     # 东财资金 (仅full模式)

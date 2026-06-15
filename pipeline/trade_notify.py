@@ -1,44 +1,46 @@
 #!/usr/bin/env python3
-"""交易通知 — 记录交易并生成待推送消息"""
-import json, os, sys
+"""交易通知 — 记录交易并生成待推送消息 (持久化版)"""
+import json, os, sys, fcntl, struct, time
 from datetime import datetime
 
-LOG_FILE = os.path.expanduser("~/dao-analyst/data/trade_log.json")
-ALERT_FILE = "/tmp/dao_trade_alerts.json"
+BASE = os.path.expanduser("~/dao-analyst")
+ALERT_FILE = os.path.join(BASE, "data", "live", "trade_alerts.json")
+LOG_FILE = os.path.join(BASE, "data", "trade_log.json")
 
-def log_trade(action, code, name, price, quantity, amount, result):
-    """记录交易到本地日志"""
-    logs = []
-    if os.path.exists(LOG_FILE):
+def _atomic_read():
+    """线程安全读"""
+    if not os.path.exists(ALERT_FILE):
+        return []
+    for _ in range(3):
         try:
-            logs = json.load(open(LOG_FILE))
+            with open(ALERT_FILE, 'r') as f:
+                fcntl.flock(f, fcntl.LOCK_SH)
+                data = json.load(f)
+                fcntl.flock(f, fcntl.LOCK_UN)
+            return data
         except:
-            logs = []
-    
-    entry = {
-        "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "action": action,
-        "code": code,
-        "name": name,
-        "price": round(price, 2),
-        "quantity": quantity,
-        "amount": round(amount, 2),
-        "result": result
-    }
-    logs.append(entry)
-    logs = logs[-500:]
-    with open(LOG_FILE, "w") as f:
-        json.dump(logs, f, ensure_ascii=False, indent=2)
-    return entry
+            time.sleep(0.05)
+    return []
+
+def _atomic_write(alerts):
+    """原子写: tmp + os.replace"""
+    tmp = ALERT_FILE + '.tmp'
+    for _ in range(3):
+        try:
+            with open(tmp, 'w') as f:
+                fcntl.flock(f, fcntl.LOCK_EX)
+                json.dump(alerts, f, ensure_ascii=False, indent=2)
+                fcntl.flock(f, fcntl.LOCK_UN)
+            os.replace(tmp, ALERT_FILE)
+            return
+        except:
+            time.sleep(0.05)
 
 def queue_alert(action, code, name, price, quantity, amount, result):
-    """写入待推送队列（agent读取后发送微信）"""
-    # 去重: 同股票同action同价格5分钟内不重复
-    from datetime import datetime as _dt
-    now = _dt.now()
+    """写入待推送队列"""
     alert = {
         "time": datetime.now().strftime("%H:%M:%S"),
-        "action": action,  # BUY / SELL
+        "action": action,
         "code": code,
         "name": name,
         "price": round(price, 2),
@@ -48,85 +50,101 @@ def queue_alert(action, code, name, price, quantity, amount, result):
         "sent": False
     }
     
-    alerts = []
-    if os.path.exists(ALERT_FILE):
-        try:
-            alerts = json.load(open(ALERT_FILE))
-        except:
-            alerts = []
+    alerts = _atomic_read()
     
-    # 去重检查
+    # 去重: 同股票同action同价格5分钟内不重复
     dup = False
     for a in alerts:
-        if (a.get('code') == code and a.get('action') == action and 
-            a.get('price') == price and not a.get('sent', False)):
-            dup = True; break
+        if (a.get('code') == code and a.get('action') == action 
+            and abs(a.get('price', 0) - price) < 0.01):
+            try:
+                t_a = datetime.strptime(a.get('time', '00:00'), '%H:%M:%S')
+                t_new = datetime.strptime(alert['time'], '%H:%M:%S')
+                if abs((t_new - t_a).total_seconds()) < 300:
+                    dup = True
+                    break
+            except:
+                pass
+    
     if not dup:
         alerts.append(alert)
-    with open(ALERT_FILE, "w") as f:
-        json.dump(alerts, f, ensure_ascii=False, indent=2)
-
-def notify_trade(action, code, name, price, quantity, result="成功"):
-    """记录+排队，返回通知文本"""
-    amount = price * quantity
-    entry = log_trade(action, code, name, price, quantity, amount, result)
-    queue_alert(action, code, name, price, quantity, amount, result)
+        _atomic_write(alerts)
     
-    emoji = "💰" if action == "BUY" else "💸"
-    return f"{emoji} {action} {name}({code}) {quantity}股 @¥{price:.2f} = ¥{amount:,.0f}"
+    # 同时写交易日志
+    log_entry = {**alert, "timestamp": datetime.now().isoformat()}
+    _append_log(log_entry)
+    
+    return not dup
 
-def get_pending_alerts():
-    """获取未发送的通知"""
-    if not os.path.exists(ALERT_FILE):
-        return []
-    try:
-        alerts = json.load(open(ALERT_FILE))
-        return [a for a in alerts if not a.get("sent", False)]
-    except:
-        return []
+def _append_log(entry):
+    """追加交易日志"""
+    os.makedirs(os.path.dirname(LOG_FILE), exist_ok=True)
+    logs = []
+    if os.path.exists(LOG_FILE):
+        try:
+            logs = json.load(open(LOG_FILE))
+        except:
+            logs = []
+    logs.append(entry)
+    with open(LOG_FILE, 'w') as f:
+        json.dump(logs, f, ensure_ascii=False, indent=2)
 
-def mark_sent(count):
-    """标记前N条为已发送"""
-    if not os.path.exists(ALERT_FILE):
-        return
-    alerts = json.load(open(ALERT_FILE))
-    sent = 0
+def cleanup_old_alerts(max_age_hours=48, max_count=500):
+    """清理过期通知"""
+    alerts = _atomic_read()
+    now = datetime.now()
+    cleaned = []
     for a in alerts:
-        if not a.get("sent", False) and sent < count:
-            a["sent"] = True
-            sent += 1
-    with open(ALERT_FILE, "w") as f:
-        json.dump(alerts, f, ensure_ascii=False, indent=2)
-
-def today_summary():
-    if not os.path.exists(LOG_FILE):
-        return "今日无交易"
-    logs = json.load(open(LOG_FILE))
-    today = datetime.now().strftime("%Y-%m-%d")
-    today_logs = [l for l in logs if l["time"].startswith(today)]
-    if not today_logs:
-        return "今日无交易"
+        try:
+            t = datetime.strptime(a.get('time', '00:00'), '%H:%M:%S')
+            if (now - t).total_seconds() < max_age_hours * 3600:
+                cleaned.append(a)
+        except:
+            cleaned.append(a)
     
-    lines = ["📊 今日交易"]
-    for l in today_logs:
-        e = "💰买入" if l["action"] == "BUY" else "💸卖出"
-        lines.append(f"  {e} {l['name']} {l['quantity']}股 @¥{l['price']:.2f} = ¥{l['amount']:,.0f}")
-    return "\n".join(lines)
+    if len(cleaned) > max_count:
+        cleaned = cleaned[-max_count:]
+    
+    _atomic_write(cleaned)
+    return len(alerts) - len(cleaned)
 
-if __name__ == "__main__":
-    cmd = sys.argv[1] if len(sys.argv) > 1 else "pending"
-    if cmd == "pending":
-        alerts = get_pending_alerts()
-        if alerts:
-            for a in alerts:
-                e = "💰" if a["action"] == "BUY" else "💸"
-                print(f"{e} {a['action']} {a['name']}({a['code']}) {a['quantity']}股 @¥{a['price']:.2f} = ¥{a['amount']:,.0f} [{a['time']}]")
-            print(f"\n共 {len(alerts)} 条待发送")
-        else:
-            print("无待发送通知")
-    elif cmd == "mark-sent":
-        count = int(sys.argv[2]) if len(sys.argv) > 2 else 999
-        mark_sent(count)
-        print(f"已标记 {count} 条为已发送")
-    elif cmd == "summary":
-        print(today_summary())
+def get_pending():
+    """获取待发送通知"""
+    alerts = _atomic_read()
+    return [a for a in alerts if not a.get('sent')]
+
+def mark_sent(indices):
+    """标记为已发送"""
+    alerts = _atomic_read()
+    for i in indices:
+        if 0 <= i < len(alerts):
+            alerts[i]['sent'] = True
+    _atomic_write(alerts)
+
+def get_pending_important():
+    """获取重要待发送通知"""
+    return [a for a in get_pending() 
+            if a.get('action') in ('BUY', 'SELL', 'BOARD_LIGHTNING', 'BOARD', 'CLOSING')]
+
+if __name__ == '__main__':
+    import sys
+    if 'pending' in sys.argv:
+        p = get_pending_important()
+        print(f'待发送: {len(p)}条')
+        for a in p:
+            print(f"  {a['action']} {a['name']}({a['code']}) @¥{a['price']} {a['time']}")
+    elif 'mark-sent' in sys.argv and len(sys.argv) > 2:
+        idx = int(sys.argv[2])
+        mark_sent([idx])
+        print(f'已标记 #{idx}')
+    elif 'cleanup' in sys.argv:
+        n = cleanup_old_alerts()
+        print(f'清理 {n} 条过期通知')
+    else:
+        p = get_pending()
+        print(f'队列: {len(p)}待发 / {len(_atomic_read())}总计')
+
+def notify_trade(action, code, name, price, quantity, result):
+    """从 autotrade 调用的简化接口"""
+    amount = price * quantity
+    return queue_alert(action, code, name, price, quantity, amount, result)

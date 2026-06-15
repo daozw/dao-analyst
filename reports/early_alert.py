@@ -11,8 +11,8 @@ def run():
     # 温度
     try:
         from market_thermometer_v2 import get_thermometer, get_rsi, rsi_signal
-        t = get_thermometer()
-        out.append(f'\n🌡️ {t["level"]}')
+        temp = get_thermometer()
+        out.append(f'\n🌡️ {temp["level"]}')
         rsi = get_rsi()
         if rsi:
             icon, msg = rsi_signal(rsi)
@@ -31,9 +31,9 @@ def run():
     except: pass
     
     # 结论
-    if '防御主导' in t.get('level',''):
+    if '防御主导' in temp.get('level',''):
         out.append(f'\n⚠️ 防御主导 → 控制仓位,回避科技')
-    elif '进攻占优' in t.get('level',''):
+    elif '进攻占优' in temp.get('level',''):
         out.append(f'\n✅ 进攻占优 → 可以出手')
     else:
         out.append(f'\n🟡 中性 → 精选个股')

@@ -7,9 +7,9 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 ALERT_FILE = "/tmp/dao_trade_alerts.json"
 STATE_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "state", "board_lightning.json")
-HT_APIKEY = os.environ.get("HT_APIKEY", "ht_2dPFpTyi93kWDXZc5dlI2a7SFyfWCy3Y5cfcVLu2P")
-MX_APIKEY = "mkt_ih0rB17IBWiKJxSEe4qe1YPfwtueGmlhASMF38NMRI8"
 MIN_GAP = 7.0; MAX_PRICE = 30
+BOARD_CAPITAL = 12000
+MAX_DAILY_STOCKS = 3
 
 def alert(action, msg):
     alerts = []; ts = datetime.now().strftime('%H:%M:%S')
@@ -49,22 +49,18 @@ def get_premarket_lightning():
         print(f"  ⚠️ 竞价数据获取失败: {e}")
         return []
 
-def submit_mx_order(code, name, price, qty):
+def submit_htsc_order(code, name, price, qty):
+    """华泰挂单 — 通过UnifiedTrader"""
     try:
-        data = json.dumps({
-            "secCode": code, "secName": name,
-            "price": price, "count": qty,
-            "orderType": "LIMIT", "tradeType": "BUY"
-        }).encode()
-        req = urllib.request.Request(
-            "https://mkapi2.dfcfs.com/finskillshub/api/claw/mockTrading/order",
-            data=data, headers={"apikey": MX_APIKEY, "Content-Type": "application/json"},
-            method="POST"
-        )
-        resp = json.loads(urllib.request.urlopen(req, timeout=5).read())
-        return resp.get("code") == 0 or resp.get("ok") == True
+        from trader import UnifiedTrader
+        trader = UnifiedTrader(strategy="board")
+        resp = trader.buy(code, price, qty)
+        ok = resp.get("ok", False) or resp.get("code") == "200"
+        tag = "✅ MX" if ok else "❌"
+        print(f"  {tag} 挂单 {name}({code}) {qty}股 @¥{price:.2f}")
+        return ok
     except Exception as e:
-        print(f"  MX挂单失败: {e}")
+        print(f"  华泰挂单失败: {e}")
         return False
 
 def save_state(stock):
@@ -79,8 +75,40 @@ def save_state(stock):
     os.makedirs(os.path.dirname(STATE_FILE), exist_ok=True)
     json.dump(state, open(STATE_FILE, 'w'), ensure_ascii=False, indent=2)
 
+def check_market_safety():
+    """多维安全检查: 温度 + 昨日涨停溢价 + 竞价情绪"""
+    try:
+        from market_thermometer_v2 import get_thermometer
+        t = get_thermometer()
+        level = t.get('level', '')
+        if '防御主导' in level:
+            return False, "防御主导→不追竞价"
+    except: pass
+    
+    # 检查昨日涨停今日开盘(是否有溢价)
+    try:
+        import urllib.request
+        # 简单检查: 看主要指数是否高开
+        raw = urllib.request.urlopen('https://qt.gtimg.cn/q=sh000001', timeout=5).read().decode('gbk')
+        d = raw.split('~')
+        if len(d) > 32:
+            open_px = float(d[5]) if d[5] else 0
+            pre = float(d[4]) if d[4] else 0
+            if pre > 0 and (open_px - pre) / pre < -0.01:
+                return False, "大盘低开>1%→谨慎"
+    except: pass
+    
+    return True, "安全"
+
 def scan():
     print(f"⚡ 竞价闪电扫描 {datetime.now().strftime('%H:%M:%S')}")
+    
+    # 多维安全检查
+    safe, reason = check_market_safety()
+    if not safe:
+        print(f"  ⛔ {reason}")
+        return
+    
     stocks = get_premarket_lightning()
     if not stocks:
         print("  无符合条件标的")
@@ -91,23 +119,65 @@ def scan():
         tag = "🔴" if s['gap'] >= 9.5 else "🟠"
         print(f"  {tag} {s['name']}({s['code']}) ¥{s['price']:.2f} +{s['gap']:.1f}% 涨停{s['limit_up']:.2f}")
     
-    # 挂单 ≤2只 (价高优先+量比优先)
+    # 多维筛选: 高价优先 + 量比优先 + 市场温度调节
+    # 进攻市可激进(≤3只), 防御抬头限1只
+    max_orders = 2
+    try:
+        from market_thermometer_v2 import get_thermometer
+        t = get_thermometer()
+        if '防御抬头' in t.get('level', ''): max_orders = 1
+        elif '进攻占优' in t.get('level', ''): max_orders = 3
+    except: pass
+    
+    # 写入候选清单供gateway推送(下单前)
+    candidate_file = '/tmp/dao_board_candidates.json'
+    candidates = [{'code': s['code'], 'name': s['name'], 'price': s['limit_up'], 'gap': s['gap']} for s in stocks[:max_orders] if s['price'] >= 3]
+    if candidates:
+        json.dump(candidates, open(candidate_file, 'w'), ensure_ascii=False)
+        print(f'  📋 候选标的已写入: {len(candidates)}只')
+    else:
+        # 空文件也写入,防止gateway卡住
+        json.dump([], open(candidate_file, 'w'))
+        print('  无符合候选')
+
+def execute_orders():
+    '''读取候选文件,执行下单'''
+    candidate_file = '/tmp/dao_board_candidates.json'
+    if not os.path.exists(candidate_file):
+        print("  无候选文件")
+        return
+    
+    candidates = json.load(open(candidate_file))
+    print(f"📋 读取{candidate_file}: {len(candidates)}只候选")
+    
+    max_orders = 2
+    try:
+        from market_thermometer_v2 import get_thermometer
+        t = get_thermometer()
+        if '防御抬头' in t.get('level', ''): max_orders = 1
+        elif '进攻占优' in t.get('level', ''): max_orders = 3
+    except: pass
+    
     ordered = 0
-    for s in stocks:
-        if ordered >= 2: break
-        if s['price'] < 3: continue  # 过滤垃圾低价
+    for c in candidates:
+        if ordered >= max_orders: break
+        budget_per_stock = BOARD_CAPITAL // max(max_orders, 1)
+        qty = max(100, int(budget_per_stock / c['price'] / 100) * 100)
         
-        qty = 100  # 默认一手
-        if submit_mx_order(s['code'], s['name'], s['limit_up'], qty):
-            print(f"  ✅ 挂单: {s['name']} {qty}股 @涨停¥{s['limit_up']:.2f}")
+        if submit_htsc_order(c['code'], c['name'], c['price'], qty):
+            print(f"  ✅ 挂单: {c['name']} {qty}股 @涨停¥{c['price']:.2f}")
             ordered += 1
             save_state({
-                "code": s['code'], "name": s['name'],
-                "qty": qty, "price": s['limit_up'], "gap": s['gap']
+                "code": c['code'], "name": c['name'],
+                "qty": qty, "price": c['price'], "gap": c['gap']
             })
-            alert("LIGHTNING", f"⚡ 竞价闪电 {s['name']}({s['code']}) +{s['gap']:.1f}% 挂涨停¥{s['limit_up']:.2f}")
+            alert("LIGHTNING", f"⚡ 竞价闪电 {c['name']}({c['code']}) +{c['gap']:.1f}% 挂涨停¥{c['price']:.2f}")
         else:
-            print(f"  ❌ 挂单失败: {s['name']}")
+            print(f"  ❌ 挂单失败: {c['name']}")
 
 if __name__ == "__main__":
-    scan()
+    mode = sys.argv[1] if len(sys.argv) > 1 else "scan"
+    if mode == "--execute":
+        execute_orders()
+    else:
+        scan()

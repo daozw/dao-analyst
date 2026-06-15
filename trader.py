@@ -6,17 +6,19 @@ import json, os, sys, urllib.request, ssl, subprocess
 from datetime import datetime
 ssl._create_default_https_context = ssl._create_unverified_context
 
-BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE = os.path.dirname(os.path.abspath(__file__))
 CONFIG_FILE = os.path.join(BASE, "data", "trade_config.json")
 LOG_FILE = os.path.join(BASE, "data", "trade_log.json")
 
 DEFAULT_CONFIG = {
-    "mode": "PAPER",        # PAPER=华泰模拟 | QMT=华泰实盘 | MX=妙想模拟
+    "board_mode": "PAPER",   # 打板→华泰模拟
+    "band_mode": "MX",       # 波段→妙想模拟
+    "mode": "PAPER",         # 兼容旧版
     "max_amount": 20000,
     "max_single": 5000,
     "confirm_real": True,
-    "qmt_path": "/Applications/QMT",        # QMT客户端路径
-    "account_id": "",                        # 华泰资金账号
+    "qmt_path": "/Applications/QMT",
+    "account_id": "",
     "ht_apikey": os.environ.get("HT_APIKEY", ""),
     "mx_apikey": "mkt_ih0rB17IBWiKJxSEe4qe1YPfwtueGmlhASMF38NMRI8",
 }
@@ -51,14 +53,38 @@ class PaperTrader:
                          capture_output=True, text=True, env=env, timeout=15)
         return json.loads(r.stdout) if r.stdout else {}
     
+    def quote_snapshot(self, code):
+        """获取Level-2盘口快照(5档买卖+逐笔)"""
+        try:
+            resp = self._call('GET', f'/api/quote/snapshot?code={code}')
+            return resp
+        except:
+            return {"ok": False, "error": "quote_snapshot failed"}
+    
+    def quote_depth(self, code):
+        """获取委托队列深度"""
+        try:
+            resp = self._call('GET', f'/api/quote/depth?code={code}')
+            return resp
+        except:
+            return {"ok": False, "error": "quote_depth failed"}
+    
+    def quote_ticks(self, code, count=100):
+        """获取最近逐笔成交"""
+        try:
+            resp = self._call('GET', f'/api/quote/ticks?code={code}&count={count}')
+            return resp
+        except:
+            return {"ok": False, "error": "quote_ticks failed"}
+    
     def buy(self, code, price, quantity):
-        return self._run("submitOrder", "--symbol", str(code),
-                        "--side", "buy", "--quantity", str(quantity),
+        return self._run("submitOrder", "--stock-code", str(code),
+                        "--direction", "buy", "--quantity", str(quantity),
                         "--price", str(price), "--exchange", "SZ" if code.startswith(("0","3","2")) else "SH")
     
     def sell(self, code, price, quantity):
-        return self._run("submitOrder", "--symbol", str(code),
-                        "--side", "sell", "--quantity", str(quantity),
+        return self._run("submitOrder", "--stock-code", str(code),
+                        "--direction", "sell", "--quantity", str(quantity),
                         "--price", str(price), "--exchange", "SZ" if code.startswith(("0","3","2")) else "SH")
     
     def cancel_all(self):
@@ -71,7 +97,7 @@ class PaperTrader:
         return self._run("getPositions")
     
     def orders(self):
-        return self._run("listPendingOrders")
+        return self._run("listPendingOrders", "--stock-code", "")
 
 
 # ═══════════════════════════════════
@@ -133,6 +159,30 @@ class QMTTrader:
         if not self.connected:
             return None
         # QMT返回的是列表
+    
+    def quote_snapshot(self, code):
+        """获取Level-2盘口快照(5档买卖+逐笔)"""
+        try:
+            resp = self._call('GET', f'/api/quote/snapshot?code={code}')
+            return resp
+        except:
+            return {"ok": False, "error": "quote_snapshot failed"}
+    
+    def quote_depth(self, code):
+        """获取委托队列深度"""
+        try:
+            resp = self._call('GET', f'/api/quote/depth?code={code}')
+            return resp
+        except:
+            return {"ok": False, "error": "quote_depth failed"}
+    
+    def quote_ticks(self, code, count=100):
+        """获取最近逐笔成交"""
+        try:
+            resp = self._call('GET', f'/api/quote/ticks?code={code}&count={count}')
+            return resp
+        except:
+            return {"ok": False, "error": "quote_ticks failed"}
     
     def buy(self, code, price, quantity):
         err = self._ensure_connected()
@@ -219,6 +269,30 @@ class MXTrader:
             headers={"apikey": self.apikey, "Content-Type": "application/json"})
         return json.loads(urllib.request.urlopen(req, timeout=10).read())
     
+    def quote_snapshot(self, code):
+        """获取Level-2盘口快照(5档买卖+逐笔)"""
+        try:
+            resp = self._call('GET', f'/api/quote/snapshot?code={code}')
+            return resp
+        except:
+            return {"ok": False, "error": "quote_snapshot failed"}
+    
+    def quote_depth(self, code):
+        """获取委托队列深度"""
+        try:
+            resp = self._call('GET', f'/api/quote/depth?code={code}')
+            return resp
+        except:
+            return {"ok": False, "error": "quote_depth failed"}
+    
+    def quote_ticks(self, code, count=100):
+        """获取最近逐笔成交"""
+        try:
+            resp = self._call('GET', f'/api/quote/ticks?code={code}&count={count}')
+            return resp
+        except:
+            return {"ok": False, "error": "quote_ticks failed"}
+    
     def buy(self, code, price, quantity):
         return self._call("trade", {"type": "buy", "stockCode": code,
                                      "price": price, "quantity": quantity})
@@ -238,9 +312,20 @@ class MXTrader:
 # 统一接口
 # ═══════════════════════════════════
 class UnifiedTrader:
-    def __init__(self):
+    def __init__(self, strategy="auto"):
+        """
+        strategy: "board"(打板→华泰PAPER) | "band"(波段→MX) | "auto"(兼容旧版)
+        打板和波段资金/账户完全隔离
+        """
         self.cfg = load_config()
-        mode = self.cfg["mode"]
+        self.strategy = strategy
+        
+        if strategy == "board":
+            mode = self.cfg.get("board_mode", "PAPER")
+        elif strategy == "band":
+            mode = self.cfg.get("band_mode", "MX")
+        else:  # auto: 兼容旧版
+            mode = self.cfg.get("mode", "PAPER")
         
         if mode == "QMT":
             self.engine = QMTTrader(self.cfg["qmt_path"], self.cfg["account_id"])
@@ -257,6 +342,30 @@ class UnifiedTrader:
         save_config(self.cfg)
         self.__init__()
         return self.mode
+    
+    def quote_snapshot(self, code):
+        """获取Level-2盘口快照(5档买卖+逐笔)"""
+        try:
+            resp = self._call('GET', f'/api/quote/snapshot?code={code}')
+            return resp
+        except:
+            return {"ok": False, "error": "quote_snapshot failed"}
+    
+    def quote_depth(self, code):
+        """获取委托队列深度"""
+        try:
+            resp = self._call('GET', f'/api/quote/depth?code={code}')
+            return resp
+        except:
+            return {"ok": False, "error": "quote_depth failed"}
+    
+    def quote_ticks(self, code, count=100):
+        """获取最近逐笔成交"""
+        try:
+            resp = self._call('GET', f'/api/quote/ticks?code={code}&count={count}')
+            return resp
+        except:
+            return {"ok": False, "error": "quote_ticks failed"}
     
     def buy(self, code, price, quantity):
         return self.engine.buy(code, price, quantity)

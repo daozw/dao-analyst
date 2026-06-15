@@ -101,20 +101,25 @@ def generate_buy_list():
 
 
 def policy_scan():
-    """政策扫描: 检查政策/行业动态"""
+    """政策+新闻扫描: 实时财经新闻 + 政策解读 + 板块资金"""
     try:
-        from pipeline.fetcher import fetch_market
-        md = fetch_market()
-        sector = md.get("sectors", [])[:5]
-        lines = ["📰 今日政策/行业动态"]
-        if sector:
-            for s in sector:
-                lines.append(f"  {'🔥' if s.get('hot',False) else '📌'} {s.get('name','?')} {s.get('chg',''):+.1f}%")
-        else:
-            lines.append("  暂无重大政策")
-        return "\n".join(lines)
+        from pipeline.news_brief import generate_full_brief
+        return generate_full_brief()
     except Exception as e:
-        return f"政策扫描异常: {e}"
+        # 降级: 用旧版简单扫描
+        try:
+            from pipeline.fetcher import fetch_market
+            md = fetch_market()
+            sector = md.get("sectors", [])[:5]
+            lines = ["📰 今日政策/行业动态 (降级模式)"]
+            if sector:
+                for s in sector:
+                    lines.append(f"  {'🔥' if s.get('hot',False) else '📌'} {s.get('name','?')} {s.get('chg',''):+.1f}%")
+            else:
+                lines.append("  暂无重大政策")
+            return "\n".join(lines)
+        except Exception as e2:
+            return f"政策扫描异常: {e} | 降级也失败: {e2}"
 
 def daily_backtest():
     """每日全市场回测 (周末运行上周数据)"""
@@ -126,14 +131,23 @@ def daily_backtest():
     engine = FalconBacktest()
     params = StrategyParams()
     
-    today = datetime.now()
-    # 如果是周一，回测上周
-    if today.weekday() == 0:
-        start = (today - timedelta(days=7)).strftime('%Y-%m-%d')
-        end = (today - timedelta(days=3)).strftime('%Y-%m-%d')
+    now = datetime.now()
+    today = now.strftime('%Y-%m-%d')
+    
+    # 如果是周一，回测上周；非交易时段用昨天数据
+    if now.weekday() == 0:
+        start = (now - timedelta(days=7)).strftime('%Y-%m-%d')
+        end = (now - timedelta(days=3)).strftime('%Y-%m-%d')
+    elif now.hour < 9 or (now.weekday() >= 5):
+        # 盘前或周末: 用最近交易日(昨天)数据
+        backdate = now - timedelta(days=1)
+        if backdate.weekday() >= 5:
+            backdate = backdate - timedelta(days=backdate.weekday()-4)
+        start = backdate.strftime('%Y-%m-%d')
+        end = start
     else:
-        start = today.strftime('%Y-%m-%d')
-        end = today.strftime('%Y-%m-%d')
+        start = today
+        end = today
     
     result = engine.run(params, start=start, end=end, market='mainboard', verbose=False)
     engine.save_result(result)
@@ -194,6 +208,79 @@ def board_scan():
     sys.path.insert(0, '/Users/sound/.openclaw-autoclaw/workspace')
     from strategy_board import FlameBoardStrategy
     return FlameBoardStrategy().report()
+def board_warn():
+    """打板预警 — 抓+7%~+9.5% 即将封板标的，提前通知"""
+    from collections import defaultdict
+    import numpy as np
+    from mootdx.quotes import Quotes
+    from datetime import datetime
+
+    c = Quotes.factory(market='std')
+    ik = ['指数','成指','综指','B股','板块','主题','ETF','LOF','基金','回购']
+    stocks = c.stocks()
+    mask = (stocks['code'].astype(str).str.match(r'^(60[0-35-9]|00[0-3])\d{3}$') &
+            ~stocks['name'].str.contains('|'.join(ik), na=False) &
+            ~stocks['name'].str.contains('ST|退', na=False))
+    codes = stocks[mask]['code'].astype(str).tolist()
+    names = dict(zip(stocks[mask]['code'].astype(str), stocks[mask]['name']))
+
+    approaching = []
+    for code in codes:
+        try:
+            df = c.bars(symbol=code, frequency=9, start=0, offset=10)
+            if df is None or df.empty or len(df) < 3:
+                continue
+            df = df.sort_index()
+            last = df.iloc[-1]
+            prev_c = df.iloc[-2]
+            chg = (last['close'] / prev_c['close'] - 1) * 100
+            if not (7.0 <= chg < 9.5):
+                continue
+            recent_vol = df['volume'].iloc[-4:-1].mean() if len(df) >= 4 else prev_c['volume']
+            vr = last['volume'] / recent_vol if recent_vol > 0 else 1
+            if vr < 1.5:
+                continue
+            h, l = last['high'], last['low']
+            seal_pct = (last['close'] - l) / (h - l) * 100 if h > l else 100
+            if len(df) >= 3:
+                speed = (last['close'] - df.iloc[-3]['close']) / df.iloc[-3]['close'] * 100
+            else:
+                speed = chg
+            limit_price = round(prev_c['close'] * 1.099 + 0.007, 2)
+            dist_pct = round((limit_price - last['close']) / last['close'] * 100, 1)
+            score = (chg - 7) * 8 + min(vr * 3, 15) + min(seal_pct * 0.1, 10) + min(speed * 5, 15)
+            approaching.append({
+                'code': code, 'name': names.get(code, ''),
+                'price': round(last['close'], 2), 'chg': round(chg, 1),
+                'vr': round(vr, 1), 'seal': round(seal_pct, 1),
+                'speed': round(speed, 1), 'dist': dist_pct,
+                'limit': limit_price, 'score': round(score, 1)
+            })
+        except:
+            pass
+
+    approaching.sort(key=lambda x: -x['score'])
+    now = datetime.now().strftime('%m-%d %H:%M')
+    if not approaching:
+        return f'⚡ 打板预警 {now}\n  暂无+7%~+9.5%逼近标的'
+
+    lines = [f'⚡ 打板预警 {now} | {len(approaching)}只逼近']
+    near = [s for s in approaching if s['chg'] >= 9]
+    close = [s for s in approaching if s['chg'] < 9]
+    if near:
+        lines.append(f'\n🔴 极近封板(>=9%):')
+        for s in near[:5]:
+            lines.append(f'  {s["code"]} {s["name"]:<8} ¥{s["price"]:.2f} +{s["chg"]}% '
+                       f'量{s["vr"]}x 距涨停{s["dist"]}% [{s["score"]}分]')
+    if close:
+        lines.append(f'\n🟠 接近封板(7-9%):')
+        for s in close[:5]:
+            lines.append(f'  {s["code"]} {s["name"]:<8} ¥{s["price"]:.2f} +{s["chg"]}% '
+                       f'量{s["vr"]}x 距涨停{s["dist"]}% [{s["score"]}分]')
+    lines.append(f'\n💡 评分=涨幅+量能+趋势+速度 | >=9%量>3x优先')
+    return '\n'.join(lines)
+
+from pipeline.board_alert import board_warn, next_day, early_warn
 
 if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) > 1 else "settle"
@@ -230,3 +317,10 @@ if __name__ == "__main__":
         print(governor_audit())
     elif cmd == "govdelist":
         print(governor_delist_check())
+    elif cmd == "board_warn":
+        print(board_warn())
+    elif cmd == "news":
+        print(policy_scan())
+    else:
+        print(f"未知命令: {cmd}")
+        print("可用: policy board board_warn backtest settle anomaly autotrade buylist governor github audit govdelist news")

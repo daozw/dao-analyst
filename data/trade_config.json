@@ -1,0 +1,12 @@
+{
+  "board_mode": "MX",
+  "band_mode": "PAPER",
+  "mode": "MX",
+  "max_amount": 20000,
+  "max_single": 5000,
+  "confirm_real": true,
+  "qmt_path": "/Applications/QMT",
+  "account_id": "",
+  "ht_apikey": "ht_2dPFpTyi93kWDXZc5dlI2a7SFyfWCy3Y5cfcVLu2P",
+  "mx_apikey": "mkt_ih0rB17IBWiKJxSEe4qe1YPfwtueGmlhASMF38NMRI8"
+}

@@ -539,8 +539,7 @@ def auto_trade(dry_run=True):
 if __name__ == "__main__":
     if "--plan" in sys.argv:
         # 计划模式: 生成交易计划,写入文件
-        dry = "--real" not in sys.argv
-        result, executed = auto_trade(dry_run=dry)
+        result, executed = auto_trade(dry_run=True)
         print(result)
         plan_file = '/tmp/dao_band_plan.json'
         plan = {
@@ -557,6 +556,9 @@ if __name__ == "__main__":
             print('⏭ 无交易计划文件')
             sys.exit(0)
         plan = json.load(open(plan_file))
+        if plan.get('executed'):
+            print('⏭ 计划已执行过')
+            sys.exit(0)
         plan['executed'] = True
         json.dump(plan, open(plan_file, 'w'), ensure_ascii=False)
         

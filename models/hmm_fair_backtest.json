@@ -1,0 +1,31 @@
+{
+  "period": "2024-01-08 ~ 2026-06-10",
+  "n_days": 584,
+  "hmm": {
+    "total_return": "5.97%",
+    "annual_return": "2.54%",
+    "sharpe": "0.219",
+    "max_drawdown": "-13.43%",
+    "calmar": "0.189",
+    "win_rate": "39.7%",
+    "exposure": "58.5%"
+  },
+  "old": {
+    "total_return": "26.20%",
+    "annual_return": "10.56%",
+    "sharpe": "0.936",
+    "max_drawdown": "-7.69%",
+    "calmar": "1.375",
+    "win_rate": "52.2%",
+    "exposure": "51.4%"
+  },
+  "buy_hold": {
+    "total_return": "36.33%",
+    "annual_return": "14.31%",
+    "sharpe": "0.855",
+    "max_drawdown": "-14.73%",
+    "calmar": "0.971",
+    "win_rate": "54.5%",
+    "exposure": "100.0%"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "generation": 1,
+  "updated": "2026-06-14T23:45:00",
+  "band": {
+    "tp_clear_pct": 15.0,
+    "stop_loss_pct": 5.0,
+    "atr_multiplier": 2.5,
+    "position_cap": 20000
+  },
+  "board": {
+    "min_gain_pct": 3.0,
+    "max_gain_pct": 8.0,
+    "min_turnover": 3.0,
+    "min_volume_ratio": 1.5
+  },
+  "strategy": "猎鹰v2.6T",
+  "notes": "基于6/12回测结果：V2.6T最优，止2.5xATR盈3.5xATR PF3.63"
+}

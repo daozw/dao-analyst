@@ -1,0 +1,15 @@
+[
+  {
+    "time": "2026-06-14T23:39:48.851701",
+    "action": "evolved",
+    "metrics_snapshot": {
+      "win_rate": 0,
+      "sharpe": 0,
+      "max_dd": 0
+    },
+    "params_changed": {
+      "min_gain_pct": "+0.5%",
+      "reason": "胜率0.0%<40%，收紧涨幅门槛"
+    }
+  }
+]

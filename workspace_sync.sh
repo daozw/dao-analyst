@@ -10,7 +10,7 @@ cp "$WATCH_DIR"/SOUL.md "$REPO_DIR/workspace/" 2>/dev/null
 cp "$WATCH_DIR"/MEMORY.md "$REPO_DIR/workspace/" 2>/dev/null
 
 cd "$REPO_DIR"
-git add workspace/ 2>/dev/null
+git add workspace/ data/watchlist.json 2>/dev/null
 if ! git diff --cached --quiet 2>/dev/null; then
     git commit -m "sync: workspace $(date '+%Y-%m-%d %H:%M')"
     git push origin main 2>&1 | tail -1

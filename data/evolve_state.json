@@ -1,0 +1,45 @@
+{
+  "generation": 1,
+  "best_params": {
+    "stop_loss": -0.06,
+    "tp1_protect": 0.02,
+    "tp2_half": 0.08,
+    "tp3_clear": 0.15,
+    "position_risk": 0.02,
+    "max_positions": 3,
+    "slippage": 0.002,
+    "pattern_weight": {
+      "弱转强": 1.0,
+      "531主升浪": 1.0,
+      "辨识度放量": 1.0,
+      "趋势回调": 1.0
+    }
+  },
+  "best_score": 0,
+  "history": [
+    {
+      "gen": 1,
+      "date": "2026-06-09 01:39",
+      "market": "neutral",
+      "best_score": 0,
+      "improved": false,
+      "params": {
+        "stop_loss": -0.06,
+        "tp1": 0.02,
+        "tp2": 0.08,
+        "tp3": 0.15,
+        "risk": 0.02,
+        "positions": 3,
+        "slippage": 0.002
+      },
+      "result": {
+        "annual": 0,
+        "sharpe": 0,
+        "drawdown": 0,
+        "win_rate": 0,
+        "trades": 0,
+        "pf": "0"
+      }
+    }
+  ]
+}
