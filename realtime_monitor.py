@@ -35,7 +35,6 @@ signal.signal(signal.SIGINT, handle_signal)
 
 # 延迟导入 (首次使用时加载)
 _mx_trade = None
-_htsc_trader = None
 
 def _get_mx_trade():
     global _mx_trade
@@ -44,12 +43,7 @@ def _get_mx_trade():
         _mx_trade = _exec_trade
     return _mx_trade
 
-def _get_htsc_trader():
-    global _htsc_trader
-    if _htsc_trader is None:
-        from trader import UnifiedTrader
-        _htsc_trader = UnifiedTrader()
-    return _htsc_trader
+from trader import get_trader as _get_htsc_trader  # 统一入口
 
 # ── 数据 ──
 
@@ -329,7 +323,9 @@ def check_board_candidates(prices, positions=None):
             for c in scan.get('candidates', []):
                 if c.get('can_board'):
                     board_codes.add(c.get('code', ''))
-    except:
+    except Exception as e:
+
+        log(f"{type(e).__name__}: {e}")  # auto-logged
         pass
     
     # 从board_pool加载所有打板候选
@@ -338,7 +334,9 @@ def check_board_candidates(prices, positions=None):
         for s in wl.get('groups', {}).get('board', {}).get('stocks', []):
             if not s['code'].startswith(('300','688','8')):
                 board_codes.add(s['code'])
-    except:
+    except Exception as e:
+
+        log(f"{type(e).__name__}: {e}")  # auto-logged
         pass
     
     for code in board_codes:
@@ -356,6 +354,7 @@ def check_board_candidates(prices, positions=None):
         if chg >= 5 and chg < 7 and vol >= 1.5:
             now_t = time.time()
             if now_t - _pre_alert_cooldown.get(code, 0) >= 120:
+                name = px.get("name", "")
                 log(f"🔔 预警 {name}({code}) +{chg:.1f}% 量比{vol:.1f}x | 提前关注")
                 _pre_alert_cooldown[code] = now_t
             continue
@@ -376,7 +375,9 @@ def check_band_signals(prices, pool, positions=None):
     sig_file = '/tmp/dao_band_signals.json'
     try:
         sigs = json.load(open(sig_file)) if os.path.exists(sig_file) else []
-    except:
+    except Exception as e:
+
+        log(f"{type(e).__name__}: {e}")  # auto-logged
         sigs = []
     
     for code in pool:
@@ -451,6 +452,23 @@ def main():
                     all_codes = list(set(bp2 + bdp2))
                     band_pool = bp2
                     log(f"池子刷新: 波段{len(band_pool)}只 + 打板{len(bdp2)}只")
+                    # 融合问财智能选股
+                    try:
+                        wcf = os.path.join(base, "data/state/pywencai_candidates.json")
+                        if os.path.exists(wcf):
+                            wc = json.load(open(wcf))
+                            wc_time = wc.get("time","")
+                            # 只融合同一天的扫描结果
+                            if _dtnow.now().strftime("%Y-%m-%d") in wc_time:
+                                wband = [c for c in wc.get("band",[]) if not c.startswith(("300","688","8"))]
+                                wboard = [c for c in wc.get("board",[]) if not c.startswith(("300","688","8"))]
+                                new_band = list(set(band_pool + wband))
+                                new_board = list(set(bdp2 + wboard))
+                                all_codes = list(set(new_band + new_board))
+                                band_pool = new_band
+                                log(f"池子刷新+问财: 波段{len(band_pool)}只 + 打板{len(new_board)}只")
+                    except Exception as e:
+                        log(f"问财融合失败: {e}")
                 except Exception as e:
                     log(f"池子刷新失败: {e}")
             prices = batch_prices(all_codes)
@@ -487,7 +505,10 @@ def main():
                             queue_alert('🚀SIG', s['code'], s['name'], s['price'], 0, 0, s['msg'])
                         except: pass
                 except: pass
-            check_board_candidates(prices, positions)
+            # 打板扫描仅在9:20-15:00运行
+            now_dt = _dtnow.now()
+            if (now_dt.hour == 9 and now_dt.minute >= 20) or (now_dt.hour > 9 and now_dt.hour < 15) and now_dt.weekday() < 5:
+                check_board_candidates(prices, positions)
             
             if cycle % 10 == 0 and band_pool:
                 check_band_signals(prices, band_pool, positions)

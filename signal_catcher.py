@@ -100,7 +100,8 @@ def _save(new_sigs):
         except: pass
     existing.extend(new_sigs)
     existing = existing[-100:]
-    json.dump(existing, open(SIGNAL_FILE, 'w'), ensure_ascii=False, indent=2)
+    with open(SIGNAL_FILE, "w") as f:
+        json.dump(existing, f, ensure_ascii=False, indent=2)
 
 def recent(minutes=10):
     if not os.path.exists(SIGNAL_FILE): return []
@@ -113,4 +114,5 @@ def clear_old():
     if not os.path.exists(SIGNAL_FILE): return
     all_s = json.load(open(SIGNAL_FILE))
     fresh = [s for s in all_s if s.get('ts',0) >= time.time()-3600]
-    json.dump(fresh, open(SIGNAL_FILE, 'w'), ensure_ascii=False, indent=2)
+    with open(SIGNAL_FILE, "w") as f:
+        json.dump(fresh, f, ensure_ascii=False, indent=2)

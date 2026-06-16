@@ -18,7 +18,9 @@ def _atomic_read():
                 data = json.load(f)
                 fcntl.flock(f, fcntl.LOCK_UN)
             return data
-        except:
+        except Exception as e:
+
+            log(f"{type(e).__name__}: {e}")  # auto-logged
             time.sleep(0.05)
     return []
 
@@ -33,7 +35,9 @@ def _atomic_write(alerts):
                 fcntl.flock(f, fcntl.LOCK_UN)
             os.replace(tmp, ALERT_FILE)
             return
-        except:
+        except Exception as e:
+
+            log(f"{type(e).__name__}: {e}")  # auto-logged
             time.sleep(0.05)
 
 def queue_alert(action, code, name, price, quantity, amount, result):
@@ -63,7 +67,9 @@ def queue_alert(action, code, name, price, quantity, amount, result):
                 if abs((t_new - t_a).total_seconds()) < 300:
                     dup = True
                     break
-            except:
+            except Exception as e:
+
+                log(f"{type(e).__name__}: {e}")  # auto-logged
                 pass
     
     if not dup:
@@ -83,7 +89,9 @@ def _append_log(entry):
     if os.path.exists(LOG_FILE):
         try:
             logs = json.load(open(LOG_FILE))
-        except:
+        except Exception as e:
+
+            log(f"{type(e).__name__}: {e}")  # auto-logged
             logs = []
     logs.append(entry)
     with open(LOG_FILE, 'w') as f:
@@ -96,10 +104,12 @@ def cleanup_old_alerts(max_age_hours=48, max_count=500):
     cleaned = []
     for a in alerts:
         try:
-            t = datetime.strptime(a.get('time', '00:00'), '%H:%M:%S')
+            t = datetime.strptime(a.get("time", "00:00"), "%H:%M:%S").replace(year=now.year, month=now.month, day=now.day)
             if (now - t).total_seconds() < max_age_hours * 3600:
                 cleaned.append(a)
-        except:
+        except Exception as e:
+
+            log(f"{type(e).__name__}: {e}")  # auto-logged
             cleaned.append(a)
     
     if len(cleaned) > max_count:

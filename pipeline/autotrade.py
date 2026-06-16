@@ -82,7 +82,8 @@ def load_daily_state():
 
 def save_daily_state(s):
     os.makedirs(os.path.dirname(DAILY_STATE), exist_ok=True)
-    json.dump(s, open(DAILY_STATE, "w"), ensure_ascii=False, indent=2)
+    with open(DAILY_STATE, "w") as f:
+        json.dump(s, f, ensure_ascii=False, indent=2)
 
 
 def calc_shares(entry_price, stop_price, risk_limit=None):
@@ -123,7 +124,8 @@ def _exec_trade(action, code, name, price, qty, dry_run=True):
         if os.path.exists(alert_file):
             alerts = json.load(open(alert_file))
         alerts.append(pre_alert)
-        json.dump(alerts, open(alert_file, 'w'), ensure_ascii=False)
+        with open(alert_file, "w") as f:
+            json.dump(alerts, f, ensure_ascii=False)
     except: pass
     
     trader = _get_band_trader()
@@ -548,7 +550,8 @@ if __name__ == "__main__":
             "executed": False,
             "trades": executed
         }
-        json.dump(plan, open(plan_file, 'w'), ensure_ascii=False)
+        with open(plan_file, "w") as f:
+            json.dump(plan, f, ensure_ascii=False)
         print(f'\n📋 交易计划已写入 {plan_file}: {len(executed)}笔')
     elif "--execute" in sys.argv:
         # 执行模式: 读取计划,逐笔执行
@@ -558,14 +561,15 @@ if __name__ == "__main__":
             sys.exit(0)
         plan = json.load(open(plan_file))
         plan['executed'] = True
-        json.dump(plan, open(plan_file, 'w'), ensure_ascii=False)
+        with open(plan_file, "w") as f:
+            json.dump(plan, f, ensure_ascii=False)
         
         trades = plan.get('trades', [])
         print(f'📋 执行{len(trades)}笔交易')
         for t in trades:
             action = t.get('action','BUY')
             code = t['code']; name = t['name']
-            price = t['price']; qty = t['quantity']
+            price = t['price']; qty = t.get('quantity', t.get('shares', 0))
             ok, msg = _exec_trade(action, code, name, price, qty, dry_run=False)
             print(f'  {msg}')
         print('✅ 计划执行完成')

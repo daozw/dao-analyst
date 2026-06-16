@@ -6,6 +6,10 @@ from collections import defaultdict
 warnings.filterwarnings('ignore')
 ssl._create_default_https_context = ssl._create_unverified_context
 
+def _log(msg):
+    from datetime import datetime
+    print(f"[{datetime.now().strftime("%H:%M:%S")}] {msg}", file=__import__("sys").stderr)
+
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from board_tracker import BoardAnalyzer
 
@@ -24,7 +28,9 @@ def _safe_alert_append(entry, alert_file="/tmp/dao_trade_alerts.json"):
             fcntl.flock(lf.fileno(), fcntl.LOCK_EX)
             try:
                 alerts = json.load(open(alert_file)) if os.path.exists(alert_file) else []
-            except:
+            except Exception as e:
+
+                _log(f"{type(e).__name__}: {e}")  # auto-logged
                 alerts = []
             alerts.append(entry)
             with open(alert_file, 'w') as af:
@@ -36,7 +42,9 @@ def _safe_alert_append(entry, alert_file="/tmp/dao_trade_alerts.json"):
             alerts.append(entry)
             with open(alert_file, 'w') as af:
                 json.dump(alerts, af, ensure_ascii=False, indent=2)
-        except:
+        except Exception as e:
+
+            _log(f"{type(e).__name__}: {e}")  # auto-logged
             print(f"  ⚠️ 告警写入失败: {e}")
 
 ALERT_FILE = "/tmp/dao_trade_alerts.json"
@@ -59,7 +67,9 @@ def get_prematch_scores():
         try:
             state = json.load(open(state_file))
             return state.get("match_scores", {})
-        except:
+        except Exception as e:
+
+            _log(f"{type(e).__name__}: {e}")  # auto-logged
             pass
     return {}
 
@@ -99,7 +109,9 @@ def get_pool_candidates():
                 code = s["code"]
                 if code.startswith(("60", "00")) and not code.startswith("688"):
                     pool.append((code, s.get("name", "")))
-    except:
+    except Exception as e:
+
+        _log(f"{type(e).__name__}: {e}")  # auto-logged
         return []
     
     pool = list(dict.fromkeys(pool))  # 去重
@@ -124,10 +136,14 @@ def get_pool_candidates():
                             "changepercent": chg, "trade": price,
                             "source": "pool_scan"
                         })
-                except:
+                except Exception as e:
+
+                    _log(f"{type(e).__name__}: {e}")  # auto-logged
                     pass
             time.sleep(0.3)  # 限流
-        except:
+        except Exception as e:
+
+            _log(f"{type(e).__name__}: {e}")  # auto-logged
             pass
     
     return results
@@ -164,7 +180,9 @@ def get_stock_detail(code):
             "turnover": float(parts[38]) if parts[38] else 0,
             "volume_ratio": float(parts[46]) if len(parts) > 46 and parts[46] else 1,
         }
-    except:
+    except Exception as e:
+
+        _log(f"{type(e).__name__}: {e}")  # auto-logged
         return None
 
 
@@ -252,6 +270,7 @@ def scan():
     
     analyzer = BoardAnalyzer()
     results = []
+    last_chg = {}
     newly_alerted = 0
     
     for stock in candidates:

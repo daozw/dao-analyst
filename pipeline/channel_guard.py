@@ -29,7 +29,9 @@ def load_state():
     if STATE_FILE.exists():
         try:
             return json.loads(STATE_FILE.read_text())
-        except:
+        except Exception as e:
+
+            log(f"{type(e).__name__}: {e}")  # auto-logged
             pass
     return {"restarts": [], "last_ok": None, "consecutive_failures": 0}
 
@@ -46,7 +48,9 @@ def gateway_pid():
                 parts = line.strip().split()
                 if parts and parts[0].isdigit():
                     return parts[0]
-    except:
+    except Exception as e:
+
+        log(f"{type(e).__name__}: {e}")  # auto-logged
         pass
     return None
 
@@ -65,10 +69,14 @@ def log_activity(minutes=15):
                     line_ts = datetime.fromisoformat(line[:19]).replace(tzinfo=TZ)
                     if line_ts >= cutoff:
                         recent_lines += 1
-                except:
+                except Exception as e:
+
+                    log(f"{type(e).__name__}: {e}")  # auto-logged
                     pass
         return age_s, recent_lines
-    except:
+    except Exception as e:
+
+        log(f"{type(e).__name__}: {e}")  # auto-logged
         return None, 0
 
 def weixin_status(minutes=15):
@@ -86,7 +94,9 @@ def weixin_status(minutes=15):
                     line_ts = datetime.fromisoformat(line[:19]).replace(tzinfo=TZ)
                     if line_ts < cutoff:
                         continue
-                except:
+                except Exception as e:
+
+                    log(f"{type(e).__name__}: {e}")  # auto-logged
                     continue
                 if "openclaw-weixin" not in line:
                     continue
@@ -95,7 +105,9 @@ def weixin_status(minutes=15):
                     errors += 1
                 if "delivery-recovery" in line and "Retry failed" in line:
                     delivery_fails += 1
-    except:
+    except Exception as e:
+
+        log(f"{type(e).__name__}: {e}")  # auto-logged
         pass
     return {"active": activity > 0, "errors": errors, "activity": activity, "delivery_fails": delivery_fails}
 
@@ -109,7 +121,9 @@ def check_weixin_config():
         if not isinstance(data, list) or len(data) == 0:
             return False, "accounts.json 为空"
         return True, f"{len(data)}个账号已配置"
-    except:
+    except Exception as e:
+
+        log(f"{type(e).__name__}: {e}")  # auto-logged
         return False, "accounts.json 解析失败"
 
 def restart_gateway():

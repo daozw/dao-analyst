@@ -6,6 +6,10 @@ import json, os, sys, urllib.request, ssl, subprocess
 from datetime import datetime
 ssl._create_default_https_context = ssl._create_unverified_context
 
+def _log(msg):
+    from datetime import datetime
+    print(f"[{datetime.now().strftime("%H:%M:%S")}] {msg}", file=__import__("sys").stderr)
+
 BASE = os.path.dirname(os.path.abspath(__file__))
 CONFIG_FILE = os.path.join(BASE, "data", "trade_config.json")
 LOG_FILE = os.path.join(BASE, "data", "trade_log.json")
@@ -58,7 +62,9 @@ class PaperTrader:
         try:
             resp = self._call('GET', f'/api/quote/snapshot?code={code}')
             return resp
-        except:
+        except Exception as e:
+
+            _log(f"{type(e).__name__}: {e}")  # auto-logged
             return {"ok": False, "error": "quote_snapshot failed"}
     
     def quote_depth(self, code):
@@ -66,7 +72,9 @@ class PaperTrader:
         try:
             resp = self._call('GET', f'/api/quote/depth?code={code}')
             return resp
-        except:
+        except Exception as e:
+
+            _log(f"{type(e).__name__}: {e}")  # auto-logged
             return {"ok": False, "error": "quote_depth failed"}
     
     def quote_ticks(self, code, count=100):
@@ -74,7 +82,9 @@ class PaperTrader:
         try:
             resp = self._call('GET', f'/api/quote/ticks?code={code}&count={count}')
             return resp
-        except:
+        except Exception as e:
+
+            _log(f"{type(e).__name__}: {e}")  # auto-logged
             return {"ok": False, "error": "quote_ticks failed"}
     
     def buy(self, code, price, quantity):
@@ -165,7 +175,9 @@ class QMTTrader:
         try:
             resp = self._call('GET', f'/api/quote/snapshot?code={code}')
             return resp
-        except:
+        except Exception as e:
+
+            _log(f"{type(e).__name__}: {e}")  # auto-logged
             return {"ok": False, "error": "quote_snapshot failed"}
     
     def quote_depth(self, code):
@@ -173,7 +185,9 @@ class QMTTrader:
         try:
             resp = self._call('GET', f'/api/quote/depth?code={code}')
             return resp
-        except:
+        except Exception as e:
+
+            _log(f"{type(e).__name__}: {e}")  # auto-logged
             return {"ok": False, "error": "quote_depth failed"}
     
     def quote_ticks(self, code, count=100):
@@ -181,7 +195,9 @@ class QMTTrader:
         try:
             resp = self._call('GET', f'/api/quote/ticks?code={code}&count={count}')
             return resp
-        except:
+        except Exception as e:
+
+            _log(f"{type(e).__name__}: {e}")  # auto-logged
             return {"ok": False, "error": "quote_ticks failed"}
     
     def buy(self, code, price, quantity):
@@ -274,7 +290,9 @@ class MXTrader:
         try:
             resp = self._call('GET', f'/api/quote/snapshot?code={code}')
             return resp
-        except:
+        except Exception as e:
+
+            _log(f"{type(e).__name__}: {e}")  # auto-logged
             return {"ok": False, "error": "quote_snapshot failed"}
     
     def quote_depth(self, code):
@@ -282,7 +300,9 @@ class MXTrader:
         try:
             resp = self._call('GET', f'/api/quote/depth?code={code}')
             return resp
-        except:
+        except Exception as e:
+
+            _log(f"{type(e).__name__}: {e}")  # auto-logged
             return {"ok": False, "error": "quote_depth failed"}
     
     def quote_ticks(self, code, count=100):
@@ -290,7 +310,9 @@ class MXTrader:
         try:
             resp = self._call('GET', f'/api/quote/ticks?code={code}&count={count}')
             return resp
-        except:
+        except Exception as e:
+
+            _log(f"{type(e).__name__}: {e}")  # auto-logged
             return {"ok": False, "error": "quote_ticks failed"}
     
     def buy(self, code, price, quantity):
@@ -311,6 +333,28 @@ class MXTrader:
 # ═══════════════════════════════════
 # 统一接口
 # ═══════════════════════════════════
+
+# ── 单例: 统一入口(HTSC/MX/PAPER) ──
+_trader_instance = None
+
+def get_trader():
+    """获取交易器单例,自动选择模式"""
+    global _trader_instance
+    if _trader_instance is None:
+        cfg = load_config()
+        mode = cfg.get('mode', 'PAPER')
+        if mode == 'PAPER':
+            from trader import UnifiedTrader
+            _trader_instance = UnifiedTrader()
+        elif mode == 'MX':
+            from pipeline.autotrade import MXTrader
+            _trader_instance = MXTrader()
+        else:
+            from trader import UnifiedTrader
+            _trader_instance = UnifiedTrader()
+    return _trader_instance
+
+
 class UnifiedTrader:
     def __init__(self, strategy="auto"):
         """
@@ -348,7 +392,9 @@ class UnifiedTrader:
         try:
             resp = self._call('GET', f'/api/quote/snapshot?code={code}')
             return resp
-        except:
+        except Exception as e:
+
+            _log(f"{type(e).__name__}: {e}")  # auto-logged
             return {"ok": False, "error": "quote_snapshot failed"}
     
     def quote_depth(self, code):
@@ -356,7 +402,9 @@ class UnifiedTrader:
         try:
             resp = self._call('GET', f'/api/quote/depth?code={code}')
             return resp
-        except:
+        except Exception as e:
+
+            _log(f"{type(e).__name__}: {e}")  # auto-logged
             return {"ok": False, "error": "quote_depth failed"}
     
     def quote_ticks(self, code, count=100):
@@ -364,7 +412,9 @@ class UnifiedTrader:
         try:
             resp = self._call('GET', f'/api/quote/ticks?code={code}&count={count}')
             return resp
-        except:
+        except Exception as e:
+
+            _log(f"{type(e).__name__}: {e}")  # auto-logged
             return {"ok": False, "error": "quote_ticks failed"}
     
     def buy(self, code, price, quantity):

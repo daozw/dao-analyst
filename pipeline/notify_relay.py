@@ -53,7 +53,7 @@ def relay():
             sig_count[key] += 1
             latest[key] = s
         
-        hot = [(k,v) for k,v in sig_count.items() if v >= 10]
+        hot = [(k,v) for k,v in sig_count.items() if v >= 3]
         hot.sort(key=lambda x: -x[1])
         
         if hot:
@@ -63,7 +63,7 @@ def relay():
                 s = latest[name]
                 desc = s.get('result','')[:40].replace(name[:4], '').strip()
                 lines.append(f"  {name} ×{cnt}  ¥{s.get('price')}  {desc}")
-            if len(hot) > 5:
+            if len(hot) > 8:
                 lines.append(f"  ...还有{len(hot)-5}只活跃")
     
     msg = '\n'.join(lines)
@@ -74,9 +74,10 @@ def relay():
         f.write(msg)
     
     # 标记所有为已发送
+    now_iso = datetime.now().isoformat()
     for a in pending:
         a['sent'] = True
-        a['sent_time'] = datetime.now().isoformat()
+        a['sent_time'] = now_iso
     
     tmp = str(ALERT_FILE) + '.tmp'
     with open(tmp, 'w') as f:

@@ -55,7 +55,8 @@ def mark_all_sent():
     for a in alerts:
         if not a.get('sent') and a.get('action') in ('BUY','SELL','BOARD_LIGHTNING','CLOSING','🚀SIG','🔥大单','📈急拉','🔄翻转','⚡抢板','📊波段'):
             a['sent'] = True
-    json.dump(alerts, open(ALERT_FILE, 'w'), ensure_ascii=False, indent=2)
+    with open(ALERT_FILE, "w") as f:
+        json.dump(alerts, f, ensure_ascii=False, indent=2)
 
     # 自动清理旧通知
     try:

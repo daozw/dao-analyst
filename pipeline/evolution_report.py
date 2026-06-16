@@ -168,7 +168,8 @@ def generate_report(backtest_result=None):
     
     # 保存报告
     os.makedirs(STATE_DIR, exist_ok=True)
-    json.dump(report, open(REPORT_FILE, "w"), ensure_ascii=False, indent=2)
+    with open(REPORT_FILE, "w") as f:
+        json.dump(report, f, ensure_ascii=False, indent=2)
     
     return report
 

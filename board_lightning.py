@@ -73,7 +73,8 @@ def save_state(stock):
         state = {'date': today, 'stocks': []}
     state['stocks'].append(stock)
     os.makedirs(os.path.dirname(STATE_FILE), exist_ok=True)
-    json.dump(state, open(STATE_FILE, 'w'), ensure_ascii=False, indent=2)
+    with open(STATE_FILE, "w") as f:
+        json.dump(state, f, ensure_ascii=False, indent=2)
 
 def check_market_safety():
     """多维安全检查: 温度 + 昨日涨停溢价 + 竞价情绪"""
@@ -133,11 +134,13 @@ def scan():
     candidate_file = '/tmp/dao_board_candidates.json'
     candidates = [{'code': s['code'], 'name': s['name'], 'price': s['limit_up'], 'gap': s['gap']} for s in stocks[:max_orders] if s['price'] >= 3]
     if candidates:
-        json.dump(candidates, open(candidate_file, 'w'), ensure_ascii=False)
+        with open(candidate_file, "w") as f:
+            json.dump(candidates, f, ensure_ascii=False)
         print(f'  📋 候选标的已写入: {len(candidates)}只')
     else:
         # 空文件也写入,防止gateway卡住
-        json.dump([], open(candidate_file, 'w'))
+        with open(candidate_file, "w") as f:
+            json.dump([], f)
         print('  无符合候选')
 
 def execute_orders():

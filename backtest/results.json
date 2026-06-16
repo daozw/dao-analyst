@@ -932,5 +932,156 @@
         "reason": "持仓"
       }
     ]
+  },
+  {
+    "timestamp": "2026-06-16T15:34:09.715848",
+    "params_name": "猎鹰 v2.6T",
+    "params": {
+      "name": "猎鹰",
+      "version": "v2.6T",
+      "ma_period": 20,
+      "atr_period": 14,
+      "stop_atr": 2.5,
+      "profit_atr": 3.5,
+      "chg_min": 0.3,
+      "chg_max": 8.0,
+      "vol_ratio_min": 1.2,
+      "kelly_fraction": 0.25,
+      "capital": 20000,
+      "use_ma5": true
+    },
+    "period": "2026-06-16~2026-06-16",
+    "total_stocks": 1804,
+    "signals": 54,
+    "trades": 54,
+    "wins": 0,
+    "losses": 54,
+    "win_rate": 0.0,
+    "total_pnl": 0.0,
+    "avg_win": 0,
+    "avg_loss": 0.0,
+    "profit_factor": 0,
+    "top_trades": [
+      {
+        "code": "000065",
+        "name": "上证龙头",
+        "buy_date": "2026-06-16",
+        "sell_date": "2026-06-16",
+        "buy_price": 12.49,
+        "sell_price": 12.49,
+        "shares": 400,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "reason": "持仓"
+      },
+      {
+        "code": "000070",
+        "name": "能源等权",
+        "buy_date": "2026-06-16",
+        "sell_date": "2026-06-16",
+        "buy_price": 19.49,
+        "sell_price": 19.49,
+        "shares": 300,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "reason": "持仓"
+      },
+      {
+        "code": "000510",
+        "name": "中证A500",
+        "buy_date": "2026-06-16",
+        "sell_date": "2026-06-16",
+        "buy_price": 22.95,
+        "sell_price": 22.95,
+        "shares": 200,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "reason": "持仓"
+      },
+      {
+        "code": "000690",
+        "name": "科创成长",
+        "buy_date": "2026-06-16",
+        "sell_date": "2026-06-16",
+        "buy_price": 5.6,
+        "sell_price": 5.6,
+        "shares": 1000,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "reason": "持仓"
+      },
+      {
+        "code": "000691",
+        "name": "科创ESG\u0000",
+        "buy_date": "2026-06-16",
+        "sell_date": "2026-06-16",
+        "buy_price": 11.15,
+        "sell_price": 11.15,
+        "shares": 500,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "reason": "持仓"
+      },
+      {
+        "code": "000697",
+        "name": "科大湾区",
+        "buy_date": "2026-06-16",
+        "sell_date": "2026-06-16",
+        "buy_price": 11.79,
+        "sell_price": 11.79,
+        "shares": 500,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "reason": "持仓"
+      },
+      {
+        "code": "600010",
+        "name": "包钢股份",
+        "buy_date": "2026-06-16",
+        "sell_date": "2026-06-16",
+        "buy_price": 2.47,
+        "sell_price": 2.47,
+        "shares": 2400,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "reason": "持仓"
+      },
+      {
+        "code": "600067",
+        "name": "冠城新材",
+        "buy_date": "2026-06-16",
+        "sell_date": "2026-06-16",
+        "buy_price": 3.63,
+        "sell_price": 3.63,
+        "shares": 1600,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "reason": "持仓"
+      },
+      {
+        "code": "600111",
+        "name": "北方稀土",
+        "buy_date": "2026-06-16",
+        "sell_date": "2026-06-16",
+        "buy_price": 51.98,
+        "sell_price": 51.98,
+        "shares": 100,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "reason": "持仓"
+      },
+      {
+        "code": "600141",
+        "name": "兴发集团",
+        "buy_date": "2026-06-16",
+        "sell_date": "2026-06-16",
+        "buy_price": 39.13,
+        "sell_price": 39.13,
+        "shares": 100,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "reason": "持仓"
+      }
+    ]
   }
 ]
