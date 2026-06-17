@@ -8,7 +8,7 @@ ssl._create_default_https_context = ssl._create_unverified_context
 
 def _log(msg):
     from datetime import datetime
-    print(f"[{datetime.now().strftime("%H:%M:%S")}] {msg}", file=__import__("sys").stderr)
+    print(f"[{datetime.now().strftime('%H:%M:%S')}] {msg}", file=__import__("sys").stderr)
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 CONFIG_FILE = os.path.join(BASE, "data", "trade_config.json")

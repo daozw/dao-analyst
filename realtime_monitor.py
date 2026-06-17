@@ -167,15 +167,24 @@ def get_positions():
     positions = {}
     
     # MX模拟持仓 (止损止盈从成本价计算)
+def get_mx_positions_file():
+    try:
+        from pipeline.autotrade import get_mx_positions as f
+        import inspect
+        return inspect.getfile(f)
+    except:
+        return "unknown"
+
     try:
         sys.path.insert(0, os.path.expanduser('~/dao-analyst'))
         from pipeline.autotrade import get_mx_positions, load_evolve_params
-        mx_pos, total, _ = get_mx_positions()
+        mx_pos, total, _ = get_mx_positions(); _ = str(type(mx_pos))
         bp = load_evolve_params()
         sl_pct = bp.get('stop_loss_pct', -0.06)
         tp1_pct = bp.get('tp_half_pct', 0.08)
         tp2_pct = bp.get('tp_clear_pct', 0.15)
-        for code, pos in mx_pos.items():
+        if _ == "<class 'list'>" or isinstance(mx_pos, list): mx_pos = {p.get("code",p.get("secCode","")): p for p in mx_pos if p}
+        for code, pos in (mx_pos.items() if hasattr(mx_pos,"items") else []):
             cost = pos['cost']
             positions[code] = {
                 'account': 'MX', 'name': pos['name'],
@@ -472,7 +481,7 @@ def main():
                 except Exception as e:
                     log(f"池子刷新失败: {e}")
             prices = batch_prices(all_codes)
-            if not prices:
+            if not prices or prices is None:
                 time.sleep(3)
                 continue
             
@@ -492,7 +501,8 @@ def main():
                         continue
                 except: pass
             
-            check_positions(positions, prices)
+            if positions:
+                check_positions(positions, prices)
             # ── 信号捕捉(提前量,每只股票检测盘口+量能+加速度) ──
             for code, px in prices.items():
                 name = px.get('name', '')

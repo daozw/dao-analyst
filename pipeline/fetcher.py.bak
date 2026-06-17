@@ -87,9 +87,23 @@ def _raw_fetch(code, full=False, use_cache=True):
                 d["fund"] = {"in":ti/1e4,"out":to/1e4,"net":(ti-to)/1e4}
         except: d["fund"] = None
     
-    # 通达信K线 (2026-06-17 mootdx断连, 直接使用默认ATR)
-    d["atr"]=d["price"]*0.03; d["support"]=d["price"]*0.95
-    d["resistance"]=d["price"]*1.05; d["klines"]=[]
+    # 通达信K线
+    try:
+        from mootdx.quotes import Quotes
+        cq = Quotes.factory(market='std'); dt = cq.bars(symbol=code, frequency=9, start=0, offset=20)
+        if len(dt) >= 14:
+            cs=[]; trs=[]; kls=[]
+            for i in range(len(dt)):
+                o,c,h,l=float(dt.iloc[i]['open']),float(dt.iloc[i]['close']),float(dt.iloc[i]['high']),float(dt.iloc[i]['low'])
+                cs.append(c); kls.append({"o":o,"c":c,"h":h,"l":l})
+                if i>0: trs.append(max(h-l,abs(h-cs[-2]),abs(l-cs[-2])))
+            d["klines"]=kls[-8:]; d["ma5"]=sum(cs[-5:])/5; d["ma20"]=sum(cs[-20:])/20
+            d["atr"]=sum(trs[-14:])/14
+            d["support"]=min(kls[-5:],key=lambda x:x["l"])["l"]
+            d["resistance"]=max(kls[-5:],key=lambda x:x["h"])["h"]
+    except:
+        d["atr"]=d["price"]*0.03; d["support"]=d["price"]*0.95
+        d["resistance"]=d["price"]*1.05; d["klines"]=[]
     
     if use_cache: _cache_put(cache_key, d)
     return d

@@ -2,7 +2,7 @@
   "generation": 1,
   "updated": "2026-06-14T23:45:00",
   "band": {
-    "tp_clear_pct": 15.0,
+    "tp_clear_pct": 0.15,
     "stop_loss_pct": 5.0,
     "atr_multiplier": 2.5,
     "position_cap": 20000

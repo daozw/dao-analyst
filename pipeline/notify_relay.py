@@ -53,7 +53,7 @@ def relay():
             sig_count[key] += 1
             latest[key] = s
         
-        hot = [(k,v) for k,v in sig_count.items() if v >= 3]
+        hot = [(k,v) for k,v in sig_count.items() if v >= 1]
         hot.sort(key=lambda x: -x[1])
         
         if hot:
@@ -73,16 +73,8 @@ def relay():
     with open(RELAY_FILE, 'w') as f:
         f.write(msg)
     
-    # 标记所有为已发送
-    now_iso = datetime.now().isoformat()
-    for a in pending:
-        a['sent'] = True
-        a['sent_time'] = now_iso
-    
-    tmp = str(ALERT_FILE) + '.tmp'
-    with open(tmp, 'w') as f:
-        json.dump(alerts, f, ensure_ascii=False, indent=2)
-    os.replace(tmp, ALERT_FILE)
+    # 不标记已发送 — 由 relay_to_wechat.sh 推送后负责标记
+    pass
     
     return msg
 

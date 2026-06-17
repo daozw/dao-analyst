@@ -11,8 +11,6 @@ warnings.filterwarnings('ignore')
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, '/Users/sound/quant-research/daily_stock_analysis/.venv/lib/python3.12/site-packages')
 
-import socket
-socket.setdefaulttimeout(5)
 from mootdx.quotes import Quotes
 from pipeline.fetcher import fetch_market
 import random
@@ -226,9 +224,7 @@ def report():
 def get_rsi(symbol='000001', period=14):
     """RSI指标"""
     try:
-        import socket
-socket.setdefaulttimeout(5)
-from mootdx.quotes import Quotes
+        from mootdx.quotes import Quotes
         q = Quotes.factory(market='std')
         df = q.bars(symbol=symbol, frequency=9, start=0, offset=period+5)
         if df is None or df.empty or len(df) < period: return None

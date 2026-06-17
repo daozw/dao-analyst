@@ -178,7 +178,7 @@ def governor_delist_check():
     return g.check_delist()
 
 
-def auto_trade_exec(dry_run="--real" not in sys.argv):
+def auto_trade(dry_run="--real" not in sys.argv):
     """自动交易执行 (被 Cron 调用, 默认模拟)"""
     import sys, os
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -209,55 +209,53 @@ def board_scan():
     from strategy_board import FlameBoardStrategy
     return FlameBoardStrategy().report()
 def board_warn():
-    """打板预警 — 抓+7%~+9.5% 即将封板标的，提前通知"""
+    """打板预警 V2 — akshare版, 抓+7%~+9.5% 即将封板标的"""
     from collections import defaultdict
     import numpy as np
-    from mootdx.quotes import Quotes
     from datetime import datetime
+    import akshare as ak
+    import pandas as pd
 
-    c = Quotes.factory(market='std')
-    ik = ['指数','成指','综指','B股','板块','主题','ETF','LOF','基金','回购']
-    stocks = c.stocks()
-    mask = (stocks['code'].astype(str).str.match(r'^(60[0-35-9]|00[0-3])\d{3}$') &
-            ~stocks['name'].str.contains('|'.join(ik), na=False) &
-            ~stocks['name'].str.contains('ST|退', na=False))
-    codes = stocks[mask]['code'].astype(str).tolist()
-    names = dict(zip(stocks[mask]['code'].astype(str), stocks[mask]['name']))
+    try:
+        df = ak.stock_zh_a_spot()
+    except Exception as e:
+        return f'⚡ 打板预警 {datetime.now().strftime("%m-%d %H:%M")}\n  akshare获取失败: {e}'
+
+    codes = df['代码'].astype(str)
+    mask = (codes.str.match(r'^sh60[0-35-9]\d{3}$') |
+            codes.str.match(r'^sz00[0-3]\d{3}$'))
+    df = df[mask].copy()
 
     approaching = []
-    for code in codes:
-        try:
-            df = c.bars(symbol=code, frequency=9, start=0, offset=10)
-            if df is None or df.empty or len(df) < 3:
-                continue
-            df = df.sort_index()
-            last = df.iloc[-1]
-            prev_c = df.iloc[-2]
-            chg = (last['close'] / prev_c['close'] - 1) * 100
-            if not (7.0 <= chg < 9.5):
-                continue
-            recent_vol = df['volume'].iloc[-4:-1].mean() if len(df) >= 4 else prev_c['volume']
-            vr = last['volume'] / recent_vol if recent_vol > 0 else 1
-            if vr < 1.5:
-                continue
-            h, l = last['high'], last['low']
-            seal_pct = (last['close'] - l) / (h - l) * 100 if h > l else 100
-            if len(df) >= 3:
-                speed = (last['close'] - df.iloc[-3]['close']) / df.iloc[-3]['close'] * 100
-            else:
-                speed = chg
-            limit_price = round(prev_c['close'] * 1.099 + 0.007, 2)
-            dist_pct = round((limit_price - last['close']) / last['close'] * 100, 1)
-            score = (chg - 7) * 8 + min(vr * 3, 15) + min(seal_pct * 0.1, 10) + min(speed * 5, 15)
-            approaching.append({
-                'code': code, 'name': names.get(code, ''),
-                'price': round(last['close'], 2), 'chg': round(chg, 1),
-                'vr': round(vr, 1), 'seal': round(seal_pct, 1),
-                'speed': round(speed, 1), 'dist': dist_pct,
-                'limit': limit_price, 'score': round(score, 1)
-            })
-        except:
-            pass
+    for _, row in df.iterrows():
+        chg = row.get('涨跌幅', 0)
+        if pd.isna(chg) or not (7.0 <= chg < 9.5):
+            continue
+        
+        code = str(row['代码'])
+        pure_code = code[2:] if len(code) >= 8 else code
+        name = row.get('名称', '')
+        price = row.get('最新价', 0)
+        high = row.get('最高', price)
+        low = row.get('最低', price)
+        prev_close = row.get('昨收', price)
+        
+        h, l, cl = float(high), float(low), float(price)
+        seal_pct = (cl - l) / (h - l) * 100 if h > l else 100
+        vr = 1.0
+        speed = chg
+        
+        limit_price = round(float(prev_close) * 1.099 + 0.007, 2)
+        dist_pct = round((limit_price - cl) / cl * 100, 1)
+        score = (chg - 7) * 8 + min(vr * 3, 15) + min(seal_pct * 0.1, 10) + min(speed * 5, 15)
+        
+        approaching.append({
+            'code': pure_code, 'name': name,
+            'price': round(cl, 2), 'chg': round(chg, 1),
+            'vr': round(vr, 1), 'seal': round(seal_pct, 1),
+            'speed': round(speed, 1), 'dist': dist_pct,
+            'limit': limit_price, 'score': round(score, 1)
+        })
 
     approaching.sort(key=lambda x: -x['score'])
     now = datetime.now().strftime('%m-%d %H:%M')
@@ -279,8 +277,6 @@ def board_warn():
                        f'量{s["vr"]}x 距涨停{s["dist"]}% [{s["score"]}分]')
     lines.append(f'\n💡 评分=涨幅+量能+趋势+速度 | >=9%量>3x优先')
     return '\n'.join(lines)
-
-from pipeline.board_alert import board_warn, next_day, early_warn
 
 if __name__ == "__main__":
     cmd = sys.argv[1] if len(sys.argv) > 1 else "settle"
@@ -305,7 +301,7 @@ if __name__ == "__main__":
         else:
             print("✅ 无异常")
     elif cmd == "autotrade":
-        print(auto_trade_exec(dry_run="--real" not in sys.argv))
+        print(auto_trade(dry_run="--real" not in sys.argv))
     elif cmd == "buylist":
         print(generate_buy_list())
 

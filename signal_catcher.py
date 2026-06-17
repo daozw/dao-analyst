@@ -99,7 +99,18 @@ def _save(new_sigs):
         try: existing = json.load(open(SIGNAL_FILE))
         except: pass
     existing.extend(new_sigs)
-    existing = existing[-100:]
+    # 智能去重: 每只股票最多保留5条, 优先保留最新
+    per_code = {}
+    for s in existing:
+        c = s['code']
+        if c not in per_code:
+            per_code[c] = []
+        per_code[c].append(s)
+    deduped = []
+    for c, sigs in per_code.items():
+        deduped.extend(sorted(sigs, key=lambda x: x['ts'])[-5:])  # 每只最多5条
+    deduped.sort(key=lambda x: x['ts'])
+    existing = deduped[-100:]  # 总共最多100条
     with open(SIGNAL_FILE, "w") as f:
         json.dump(existing, f, ensure_ascii=False, indent=2)
 

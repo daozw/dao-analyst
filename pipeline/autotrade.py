@@ -313,6 +313,17 @@ def auto_trade(dry_run=True):
     if not sell_only:
         sell_only = now.hour >= 14 and now.minute >= 30
     
+    # 预计算市场温度（避免循环内重复调用）
+    _cached_temp_mult = 1.0
+    try:
+        from market_thermometer_v2 import get_thermometer
+        t = get_thermometer()
+        level = t.get('level', '')
+        if '进攻占优' in level: _cached_temp_mult = 0.85
+        elif '防御抬头' in level: _cached_temp_mult = 0.6
+        elif '防御主导' in level: _cached_temp_mult = 0
+    except: pass
+    
     for s in band:
         code = s["code"]; name = s["name"]
         
@@ -326,7 +337,7 @@ def auto_trade(dry_run=True):
         if not dry_run and code in mx_pos:
             lines.append(f"  ⏭️ {name} (已持{mx_pos[code]['qty']}股)"); continue
         
-        d = fetch(code, use_cache=False)
+        d = fetch(code, use_cache=True)
         if "error" in d: lines.append(f"  ❌ {name} 数据错误"); continue
         
         a = analyze(d, atr_mult); sig = a["g"]; score = a.get("score", sig * 16); chg = d["chg"]; price = d["price"]; pr = a["prices"]
@@ -368,16 +379,8 @@ def auto_trade(dry_run=True):
             lines.append(f"  ⏭️ {name} (剩余¥{remaining:,.0f}不够1手)"); continue
         
         # 评分分档: 高信心多买,低信心少买
-        # 市场温度动态调节阈值
-        temp_mult = 1.0
-        try:
-            from market_thermometer_v2 import get_thermometer
-            t = get_thermometer()
-            level = t.get('level', '')
-            if '进攻占优' in level: temp_mult = 0.85    # 进攻市放大仓位
-            elif '防御抬头' in level: temp_mult = 0.6   # 防御抬头减仓
-            elif '防御主导' in level: temp_mult = 0      # 防御主导暂停
-        except: pass
+        # 市场温度动态调节阈值 (已在循环外预计算)
+        temp_mult = _cached_temp_mult
         
         if score >= 70:
             risk_limit = int(600 * temp_mult)
@@ -460,7 +463,7 @@ def auto_trade(dry_run=True):
         for code, reason in time_stops:
             if code in mx_pos and code not in today_codes:
                 pos = mx_pos[code]
-                d = fetch(code, use_cache=False)
+                d = fetch(code, use_cache=True)
                 if "error" in d: continue
                 price = d["price"]
                 ok, msg = _exec_trade("SELL", code, pos["name"], price, pos["qty"], dry_run)
@@ -482,7 +485,7 @@ def auto_trade(dry_run=True):
                 lines.append(f"  ⛔ {pos['name']} {verify_reason}")
                 continue
             
-            d = fetch(code, use_cache=False)
+            d = fetch(code, use_cache=True)
             if "error" in d: continue
             a = analyze(d, atr_mult); price = d["price"]; pr = a["prices"]
             profit_pct = pos["profit_pct"]
@@ -584,6 +587,6 @@ def get_mx_positions():
         import requests, time, hashlib, json
         url = "https://moni.eastmoney.com/api/position/list"
         # 简化版：返回空持仓
-        return [], 0.0, 0.0
+        return {}, 0.0, 0.0
     except Exception as e:
-        return [], 0.0, 0.0
+        return {}, 0.0, 0.0
