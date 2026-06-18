@@ -1234,5 +1234,156 @@
         "reason": "持仓"
       }
     ]
+  },
+  {
+    "timestamp": "2026-06-18T02:01:17.079413",
+    "params_name": "猎鹰 v2.6T",
+    "params": {
+      "name": "猎鹰",
+      "version": "v2.6T",
+      "ma_period": 20,
+      "atr_period": 14,
+      "stop_atr": 2.5,
+      "profit_atr": 3.5,
+      "chg_min": 0.3,
+      "chg_max": 8.0,
+      "vol_ratio_min": 1.2,
+      "kelly_fraction": 0.25,
+      "capital": 20000,
+      "use_ma5": true
+    },
+    "period": "2026-06-17~2026-06-17",
+    "total_stocks": 1804,
+    "signals": 45,
+    "trades": 45,
+    "wins": 0,
+    "losses": 45,
+    "win_rate": 0.0,
+    "total_pnl": 0.0,
+    "avg_win": 0,
+    "avg_loss": 0.0,
+    "profit_factor": 0,
+    "top_trades": [
+      {
+        "code": "000032",
+        "name": "上证能源",
+        "buy_date": "2026-06-17",
+        "sell_date": "2026-06-17",
+        "buy_price": 23.22,
+        "sell_price": 23.22,
+        "shares": 200,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "reason": "持仓"
+      },
+      {
+        "code": "000034",
+        "name": "上证工业",
+        "buy_date": "2026-06-17",
+        "sell_date": "2026-06-17",
+        "buy_price": 26.69,
+        "sell_price": 26.69,
+        "shares": 200,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "reason": "持仓"
+      },
+      {
+        "code": "000066",
+        "name": "上证商品",
+        "buy_date": "2026-06-17",
+        "sell_date": "2026-06-17",
+        "buy_price": 17.81,
+        "sell_price": 17.81,
+        "shares": 300,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "reason": "持仓"
+      },
+      {
+        "code": "000070",
+        "name": "能源等权",
+        "buy_date": "2026-06-17",
+        "sell_date": "2026-06-17",
+        "buy_price": 20.66,
+        "sell_price": 20.66,
+        "shares": 200,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "reason": "持仓"
+      },
+      {
+        "code": "600179",
+        "name": "安通控股",
+        "buy_date": "2026-06-17",
+        "sell_date": "2026-06-17",
+        "buy_price": 4.72,
+        "sell_price": 4.72,
+        "shares": 1200,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "reason": "持仓"
+      },
+      {
+        "code": "600191",
+        "name": "华资实业",
+        "buy_date": "2026-06-17",
+        "sell_date": "2026-06-17",
+        "buy_price": 11.33,
+        "sell_price": 11.33,
+        "shares": 500,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "reason": "持仓"
+      },
+      {
+        "code": "600360",
+        "name": "华微电子",
+        "buy_date": "2026-06-17",
+        "sell_date": "2026-06-17",
+        "buy_price": 12.18,
+        "sell_price": 12.18,
+        "shares": 400,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "reason": "持仓"
+      },
+      {
+        "code": "600416",
+        "name": "湘电股份",
+        "buy_date": "2026-06-17",
+        "sell_date": "2026-06-17",
+        "buy_price": 11.17,
+        "sell_price": 11.17,
+        "shares": 500,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "reason": "持仓"
+      },
+      {
+        "code": "600460",
+        "name": "士兰微\u0000\u0000",
+        "buy_date": "2026-06-17",
+        "sell_date": "2026-06-17",
+        "buy_price": 40.83,
+        "sell_price": 40.83,
+        "shares": 100,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "reason": "持仓"
+      },
+      {
+        "code": "600500",
+        "name": "中化国际",
+        "buy_date": "2026-06-17",
+        "sell_date": "2026-06-17",
+        "buy_price": 9.2,
+        "sell_price": 9.2,
+        "shares": 600,
+        "pnl": 0.0,
+        "pnl_pct": 0.0,
+        "reason": "持仓"
+      }
+    ]
   }
 ]

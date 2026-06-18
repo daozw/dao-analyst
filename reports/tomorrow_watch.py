@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """明日关注 V3.1 — autotrade盘前预演：band池+市场驱动+信号过滤"""
 import sys, os, json, urllib.request, ssl, time
+os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from datetime import datetime
 ssl._create_default_https_context = ssl._create_unverified_context
 

@@ -3,6 +3,7 @@
 import sys,fcntl,os,json
 from datetime import datetime, timedelta
 sys.path.insert(0,os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from backtest_engine import *
 from pipeline.evolution_report import generate_report, format_report
 ALERT_FILE='/tmp/dao_trade_alerts.json'

@@ -313,6 +313,17 @@ def auto_trade(dry_run=True):
     if not sell_only:
         sell_only = now.hour >= 14 and now.minute >= 30
     
+    # 预计算市场温度（避免循环内重复调用）
+    _cached_temp_mult = 1.0
+    try:
+        from market_thermometer_v2 import get_thermometer
+        t = get_thermometer()
+        level = t.get('level', '')
+        if '进攻占优' in level: _cached_temp_mult = 0.85
+        elif '防御抬头' in level: _cached_temp_mult = 0.6
+        elif '防御主导' in level: _cached_temp_mult = 0
+    except: pass
+    
     for s in band:
         code = s["code"]; name = s["name"]
         
@@ -368,16 +379,8 @@ def auto_trade(dry_run=True):
             lines.append(f"  ⏭️ {name} (剩余¥{remaining:,.0f}不够1手)"); continue
         
         # 评分分档: 高信心多买,低信心少买
-        # 市场温度动态调节阈值
-        temp_mult = 1.0
-        try:
-            from market_thermometer_v2 import get_thermometer
-            t = get_thermometer()
-            level = t.get('level', '')
-            if '进攻占优' in level: temp_mult = 0.85    # 进攻市放大仓位
-            elif '防御抬头' in level: temp_mult = 0.6   # 防御抬头减仓
-            elif '防御主导' in level: temp_mult = 0      # 防御主导暂停
-        except: pass
+        # 市场温度动态调节阈值 (已在循环外预计算)
+        temp_mult = _cached_temp_mult
         
         if score >= 70:
             risk_limit = int(600 * temp_mult)

@@ -8,6 +8,7 @@ from datetime import datetime
 from collections import defaultdict
 ssl._create_default_https_context = ssl._create_unverified_context
 sys.path.insert(0,os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 ALERT_FILE='/tmp/dao_trade_alerts.json'
 
 SECTOR_KW = {

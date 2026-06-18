@@ -227,8 +227,8 @@ def get_rsi(symbol='000001', period=14):
     """RSI指标"""
     try:
         import socket
-socket.setdefaulttimeout(5)
-from mootdx.quotes import Quotes
+        socket.setdefaulttimeout(5)
+        from mootdx.quotes import Quotes
         q = Quotes.factory(market='std')
         df = q.bars(symbol=symbol, frequency=9, start=0, offset=period+5)
         if df is None or df.empty or len(df) < period: return None
