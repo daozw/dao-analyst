@@ -1,0 +1,13 @@
+{
+  "timestamp": "2026-06-20T14:25:00+08:00",
+  "type": "general_patrol",
+  "checks": {
+    "disk": {"status": "ok", "used_pct": "2%", "available": "613Gi"},
+    "evolution_freshness": {"status": "ok", "last_modified": "2026-06-18T02:02:19+08:00", "days_ago": 2},
+    "gateway": {"status": "ok", "probe": "ok", "port": 18789},
+    "channels": {"weixin": "enabled", "feishu": "enabled"},
+    "crontab": {"status": "ok", "entries": "all valid"},
+    "gateway_cron": {"status": "unknown", "note": "subcommand unavailable"}
+  },
+  "summary": "Saturday 14:25 patrol - all clear. A股 weekend, 彩票 not in window."
+}

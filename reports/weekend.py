@@ -161,3 +161,13 @@ def run():
 
 if __name__ == '__main__':
     print(run())
+
+
+# ── 写relay文件供自动推送 ──
+try:
+    import os
+    rf = os.path.expanduser('~/dao-analyst/data/live/relay_pending.txt')
+    summary = f"📰 周末回顾 {__import__('datetime').datetime.now().strftime('%m-%d')}\n" + "\n".join([l for l in open('/Users/sound/dao-analyst/logs/weekend.log').read().split('\n') if l.strip() and not l.startswith('=')][:15])
+    with open(rf, 'w') as f:
+        f.write(summary[:800])
+except: pass

@@ -1,0 +1,20 @@
+[
+ {
+  "time": "2026-06-22T14:27:29.043905",
+  "type": "general_patrol_14",
+  "disk": "2% used, 613Gi free",
+  "disk_status": "OK",
+  "evolution_age_days": 4.5,
+  "evolution_status": "OK (< 7 days)",
+  "wechat_channel": "configured but inactive 15min",
+  "wechat_status": "WARN",
+  "feishu_channel": "OK",
+  "doctor_fix": "completed - resolved missing node-edge-tts/playwright-core",
+  "cron_status": "all A股 crons present for Monday trading day",
+  "patrol_log": "CREATED (was missing)",
+  "issues": [
+   "WeChat channel inactive ~15min (auto-repair via channel_guard)",
+   "patrol_log.json was missing (created now)"
+  ]
+ }
+]

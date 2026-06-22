@@ -157,6 +157,9 @@ def batch_prices(codes):
                     'bid_total': bid_total, 'ask_total': ask_total,
                     'imbalance_ratio': imb, 'inside_ratio': in_ratio,
                     'commission_ratio': float(d[48]) if len(d)>48 and d[48] else 0,
+                    'mcap': float(d[45]) if len(d)>45 and d[45] else 0,
+                    'amount': float(d[37]) if len(d)>37 and d[37] else 0,
+                    'pe': float(d[39]) if len(d)>39 and d[39] else 0,
                 }
         except Exception as e:
             log(f"行情异常: {e}")
@@ -356,6 +359,14 @@ def check_board_candidates(prices, positions=None):
         chg = px['chg']; price = px['price']; vol = px['vol_ratio']
         pre_close = px['pre_close']; limit_up = round(pre_close*1.10, 2)
         turnover = px['turnover']
+        name = px.get('name', '')
+        
+        # ── 垃圾股过滤 ──
+        if 'ST' in name: continue  # ST/*ST
+        mcap = px.get('mcap', 0)
+        if 0 < mcap < 100: continue  # 市值<100亿
+        amt = px.get('amount', 0)
+        if 0 < amt < 3000: continue  # 成交额<3000万
         
         # 过滤条件
         if price >= limit_up: continue  # 已涨停只排板
@@ -395,6 +406,13 @@ def check_band_signals(prices, pool, positions=None):
         if px['chg']>=5 or px['chg']<=-2: continue
         if px['vol_ratio']<0.5: continue
         if px['price']<3 or px['price']>50: continue
+        # 波段垃圾过滤(市值≥30亿)
+        name_band = px.get('name','')
+        if 'ST' in name_band: continue
+        mcap_band = px.get('mcap',0)
+        if 0 < mcap_band < 30: continue
+        amt_band = px.get('amount',0)
+        if 0 < amt_band < 1000: continue
         
         score = 0
         if px['chg']>0: score+=15

@@ -219,3 +219,16 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
+# ── 写relay文件供自动推送 ──
+try:
+    import os,json
+    rf = os.path.expanduser('~/dao-analyst/data/live/relay_pending.txt')
+    tf = os.path.expanduser('~/.openclaw-autoclaw/workspace/reports/tomorrow_watch.txt')
+    if os.path.exists(tf):
+        content = open(tf).read()
+        summary = f"📅 明日关注\n{content[:700]}"
+        with open(rf, 'w') as f:
+            f.write(summary)
+except: pass
