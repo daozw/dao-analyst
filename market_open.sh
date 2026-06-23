@@ -12,3 +12,4 @@ fi
 nohup .venv/bin/python3 realtime_monitor.py > /tmp/realtime_monitor_stdout.log 2>&1 &
 echo $! > /tmp/realtime_monitor.pid
 echo "✅ 实时监控已启动 PID=$(cat /tmp/realtime_monitor.pid)"
+rm -f /tmp/dao_signals.json  # 清空昨日信号池

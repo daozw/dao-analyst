@@ -320,6 +320,7 @@ def check_positions(positions, prices):
             exec_sell(code, pos['name'], price, sell_qty, pos['account'])
 
 def check_board_candidates(prices, positions=None):
+    if positions is None: positions = {}
     """实时打板扫描: 从board_pool中检测涨幅7-9.5%+量比>2的标的"""
     if positions is None:
         positions = get_positions()
@@ -388,6 +389,7 @@ def check_board_candidates(prices, positions=None):
         exec_board_buy(code, px['name'], price, qty)
 
 def check_band_signals(prices, pool, positions=None):
+    if positions is None: positions = {}
     if positions is None:
         positions = get_positions()
     pos_codes = set(positions.keys())
@@ -406,13 +408,13 @@ def check_band_signals(prices, pool, positions=None):
         if px['chg']>=5 or px['chg']<=-2: continue
         if px['vol_ratio']<0.5: continue
         if px['price']<3 or px['price']>50: continue
-        # 波段垃圾过滤(市值≥30亿)
-        name_band = px.get('name','')
-        if 'ST' in name_band: continue
-        mcap_band = px.get('mcap',0)
-        if 0 < mcap_band < 30: continue
-        amt_band = px.get('amount',0)
-        if 0 < amt_band < 1000: continue
+        # 波段过滤(成交额为主)
+        name_bd2 = px.get('name','')
+        if 'ST' in name_bd2: continue
+        amt_bd2 = px.get('amount',0)
+        if 0 < amt_bd2 < 3000: continue  # 日成交<3000万
+        mcap_bd2 = px.get('mcap',0)
+        if 0 < mcap_bd2 < 20: continue  # 市值<20亿
         
         score = 0
         if px['chg']>0: score+=15
@@ -432,6 +434,14 @@ def main():
     global running
     with open(PID_FILE, 'w') as f:
         f.write(str(os.getpid()))
+import fcntl
+_lock_fd = open("/tmp/realtime_monitor.lock", "w")
+try:
+    fcntl.flock(_lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+except IOError:
+    print("[LOCK] realtime_monitor已在运行,退出")
+    sys.exit(0)
+
     
     log("🚀 实时监控启动")
     
@@ -561,6 +571,7 @@ def main():
             log(f"异常: {e}")
         time.sleep(3)
     
+    _lock_fd.close()
     log("🛑 实时监控停止")
     if os.path.exists(PID_FILE):
         os.remove(PID_FILE)

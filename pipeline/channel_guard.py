@@ -31,7 +31,7 @@ def load_state():
             return json.loads(STATE_FILE.read_text())
         except Exception as e:
 
-            log(f"{type(e).__name__}: {e}")  # auto-logged
+            pass  # skip non-ISO lines
             pass
     return {"restarts": [], "last_ok": None, "consecutive_failures": 0}
 
@@ -50,7 +50,7 @@ def gateway_pid():
                     return parts[0]
     except Exception as e:
 
-        log(f"{type(e).__name__}: {e}")  # auto-logged
+        pass  # skip non-ISO lines
         pass
     return None
 
@@ -71,12 +71,12 @@ def log_activity(minutes=15):
                         recent_lines += 1
                 except Exception as e:
 
-                    log(f"{type(e).__name__}: {e}")  # auto-logged
+                    pass  # skip non-ISO lines
                     pass
         return age_s, recent_lines
     except Exception as e:
 
-        log(f"{type(e).__name__}: {e}")  # auto-logged
+        pass  # skip non-ISO lines
         return None, 0
 
 def weixin_status(minutes=15):
@@ -96,7 +96,7 @@ def weixin_status(minutes=15):
                         continue
                 except Exception as e:
 
-                    log(f"{type(e).__name__}: {e}")  # auto-logged
+                    pass  # skip non-ISO lines
                     continue
                 if "openclaw-weixin" not in line:
                     continue
@@ -107,7 +107,7 @@ def weixin_status(minutes=15):
                     delivery_fails += 1
     except Exception as e:
 
-        log(f"{type(e).__name__}: {e}")  # auto-logged
+        pass  # skip non-ISO lines
         pass
     return {"active": activity > 0, "errors": errors, "activity": activity, "delivery_fails": delivery_fails}
 
@@ -123,7 +123,7 @@ def check_weixin_config():
         return True, f"{len(data)}个账号已配置"
     except Exception as e:
 
-        log(f"{type(e).__name__}: {e}")  # auto-logged
+        pass  # skip non-ISO lines
         return False, "accounts.json 解析失败"
 
 def restart_gateway():

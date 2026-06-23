@@ -1,9 +1,10 @@
 #!/bin/bash
-# 双轨推送: crontab自动保底 + session手动主力
+# DAO → 微信推送（2026-06-23 修复版: 使用 openclaw message send）
 RELAY_FILE="$HOME/dao-analyst/data/live/relay_pending.txt"
 SENT_FILE="$HOME/dao-analyst/data/live/relay_last_sent.txt"
-CONFIG_FILE="$HOME/.openclaw-autoclaw/openclaw.runtime.json"
 LOG_FILE="$HOME/dao-analyst/logs/relay_cron.log"
+WECHAT_TARGET="o9cq80wRoXDnZLK2e_Z4fWXMSNSs@im.wechat"
+OPENCLAW="/Users/sound/.local/bin/openclaw"
 
 [ ! -f "$RELAY_FILE" ] && exit 0
 CURRENT=$(cat "$RELAY_FILE")
@@ -11,24 +12,12 @@ CURRENT=$(cat "$RELAY_FILE")
 PREV=$(cat "$SENT_FILE" 2>/dev/null)
 [ "$CURRENT" = "$PREV" ] && exit 0
 
-NODE="/Applications/AutoClaw.app/Contents/Resources/node/darwin-arm64/node"
-CLI="$HOME/Library/Application Support/autoclaw/embedded-gateway-runtime/0aa756dc7703af4d/gateway/openclaw/node_modules/.bin/openclaw"
 MSG=$(head -c 800 "$RELAY_FILE")
-
-# 1. 修复Gateway反复重置的config
-python3 -c "
-import json
-d=json.load(open('$CONFIG_FILE'))
-d['channels'].get('feishu',{}).pop('name',None)
-d.get('plugins',{}).pop('allow',None)
-json.dump(d,open('$CONFIG_FILE','w'),indent=2)
-" 2>/dev/null
-
-# 2. 推送
 NOW=$(date '+%H:%M:%S')
-if "$NODE" "$CLI" agent --agent dao --channel weixin --deliver --timeout 30 --message "$MSG" >/dev/null 2>&1; then
+
+if "$OPENCLAW" message send --channel openclaw-weixin --target "$WECHAT_TARGET" --message "$MSG" >/dev/null 2>&1; then
     cp "$RELAY_FILE" "$SENT_FILE"
     echo "[$NOW] ✅" >> "$LOG_FILE"
 else
-    echo "[$NOW] ❌ CLI失败(session手动保底)" >> "$LOG_FILE"
+    echo "[$NOW] ❌ 微信推送失败" >> "$LOG_FILE"
 fi
