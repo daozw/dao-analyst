@@ -1,13 +1,14 @@
 {
-  "timestamp": "2026-06-20T14:25:00+08:00",
-  "type": "general_patrol",
-  "checks": {
-    "disk": {"status": "ok", "used_pct": "2%", "available": "613Gi"},
-    "evolution_freshness": {"status": "ok", "last_modified": "2026-06-18T02:02:19+08:00", "days_ago": 2},
-    "gateway": {"status": "ok", "probe": "ok", "port": 18789},
-    "channels": {"weixin": "enabled", "feishu": "enabled"},
-    "crontab": {"status": "ok", "entries": "all valid"},
-    "gateway_cron": {"status": "unknown", "note": "subcommand unavailable"}
-  },
-  "summary": "Saturday 14:25 patrol - all clear. A股 weekend, 彩票 not in window."
+  "time": "2026-06-24T10:27:00+08:00",
+  "type": "A股巡检",
+  "results": {
+    "磁盘": {"status": "✅", "detail": "2% used, 614Gi available"},
+    "A股Cron": {"status": "✅", "detail": "竞价/开盘/温度计/盘中监控全部正常"},
+    "彩票Cron": {"status": "✅", "detail": "dp-lottery cron 完整"},
+    "微信通道": {"status": "⚠️已修复", "detail": "08:50-10:25 连续40次推送失败，重启网关后恢复"},
+    "飞书通道": {"status": "⚠️", "detail": "bundled-channel-entry contract 警告，需关注"},
+    "今日打板": {"status": "✅", "detail": "康盛股份1100股@5.13, 锌业股份900股@6.24"},
+    "今日波段": {"status": "✅", "detail": "福达股份 BUY @16.28/16.82, 10:00-10:01"},
+    "市场温度": {"status": "🟢", "detail": "进攻占优, 防御/进攻比0.23"}
+  }
 }

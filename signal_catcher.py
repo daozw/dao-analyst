@@ -13,7 +13,7 @@
 import json, time, os
 
 SIGNAL_COOLDOWN = 600  # 同票冷却(秒,无视信号类型)
-SIGNAL_FILE = "/tmp/dao_signals.json"
+SIGNAL_FILE = os.path.expanduser("~/dao-analyst/data/live/signals.json")
 
 _snapshots = {}
 _signal_cooldown = {}

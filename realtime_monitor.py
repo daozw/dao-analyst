@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """实时监控 V1.0 — 3秒轮询,盯盘+触发交易,替代cron轮询"""
-import sys, os, json, time, signal, urllib.request, ssl
+import sys, os, json, time, signal, fcntl, urllib.request, ssl
 from datetime import datetime
 from signal_catcher import capture as catch_signal
 
@@ -181,13 +181,12 @@ def get_mx_positions_file():
     try:
         sys.path.insert(0, os.path.expanduser('~/dao-analyst'))
         from pipeline.autotrade import get_mx_positions, load_evolve_params
-        mx_pos, total, _ = get_mx_positions(); _ = str(type(mx_pos))
+        mx_pos, total, _ = get_mx_positions()
         bp = load_evolve_params()
         sl_pct = bp.get('stop_loss_pct', -0.06)
         tp1_pct = bp.get('tp_half_pct', 0.08)
         tp2_pct = bp.get('tp_clear_pct', 0.15)
-        if _ == "<class 'list'>" or isinstance(mx_pos, list): mx_pos = {p.get("code",p.get("secCode","")): p for p in mx_pos if p}
-        for code, pos in (mx_pos.items() if hasattr(mx_pos,"items") else []):
+        for code, pos in mx_pos.items():
             cost = pos['cost']
             positions[code] = {
                 'account': 'MX', 'name': pos['name'],
@@ -324,7 +323,7 @@ def check_board_candidates(prices, positions=None):
     """实时打板扫描: 从board_pool中检测涨幅7-9.5%+量比>2的标的"""
     if positions is None:
         positions = get_positions()
-    pos_codes = set(positions.keys())
+    pos_codes = set(positions.keys()) if positions and hasattr(positions,"keys") else set()
     
     # 从board_scan.json获取候选列表(作为补充)
     board_codes = set()
@@ -392,7 +391,7 @@ def check_band_signals(prices, pool, positions=None):
     if positions is None: positions = {}
     if positions is None:
         positions = get_positions()
-    pos_codes = set(positions.keys())
+    pos_codes = set(positions.keys()) if positions and hasattr(positions,"keys") else set()
     
     sig_file = '/tmp/dao_band_signals.json'
     try:
@@ -434,13 +433,9 @@ def main():
     global running
     with open(PID_FILE, 'w') as f:
         f.write(str(os.getpid()))
-import fcntl
-_lock_fd = open("/tmp/realtime_monitor.lock", "w")
-try:
-    fcntl.flock(_lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
-except IOError:
-    print("[LOCK] realtime_monitor已在运行,退出")
-    sys.exit(0)
+        _lock_fd = open("/tmp/realtime_monitor.lock", "w")
+        fcntl.flock(_lock_fd, fcntl.LOCK_EX)
+        print("[LOCK] 旧进程已死, 重新获取锁")
 
     
     log("🚀 实时监控启动")
@@ -465,6 +460,7 @@ except IOError:
         all_codes = ['600900']
     
     _pos_cache = {}
+    positions = {}
     cycle = 0
     # 交易日检测: 周末退出
     from datetime import datetime as _dtnow

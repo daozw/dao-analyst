@@ -1,0 +1,1 @@
+{"timestamp": "2026-06-23T18:25:48.182598", "type": "heartbeat", "checks": {"disk": "OK (2% used, 610Gi avail)", "evolution": "OK (last updated ~5 days ago)", "cron": "OK (36 entries)", "gateway": "OK (PID=9237)", "wechat": "configured, low activity (normal for after-hours)", "feishu": "not checked in this round"}, "status": "OK"}
