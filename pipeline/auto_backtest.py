@@ -47,7 +47,7 @@ def main(weekend=False):
     lines.append(f"胜场: {r.wins} | 负场: {r.losses} | 均赢: ¥{r.avg_win:,.0f} | 均亏: ¥{r.avg_loss:,.0f}")
     
     # 判断 + 失效检测
-    if r.sharpe>0.5 and r.total_return_pct>0:
+    if r.sharpe>0.5 and (r.total_pnl / r.params.capital * 100) > 0:
         verdict='✅ 策略有效,继续执行'
     elif r.sharpe>-0.5:
         verdict='🟡 持平,观察参数'
@@ -55,7 +55,7 @@ def main(weekend=False):
         verdict='⚠️ 不佳,等待进化优化'
     
     # 🧬 策略失效标记: 回测偏差>20% → 标记策略失效
-    if r.get('total_return_pct', 0) < -20 or r.get('max_drawdown_pct', 100) > 30:
+    if (r.total_pnl / r.params.capital * 100) < -20 or (abs(r.max_loss) / r.params.capital * 100) > 30:
         verdict = '🔴 策略失效(偏差>20%)'
         # 保存失效标记
         import json as _json2

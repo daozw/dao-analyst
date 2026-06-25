@@ -30,41 +30,66 @@ def relay():
     sigs = [a for a in pending if a.get('action') == '🚀SIG']
     
     lines = []
-    lines.append(f"📊 {datetime.now().strftime('%H:%M')} DAO通知")
+    now_str = datetime.now().strftime('%H:%M')
+    lines.append(f"📊 {now_str} DAO通知")
+    # 大盘指数
+    try:
+        import urllib.request
+        raw=urllib.request.urlopen('https://qt.gtimg.cn/q=sh000001,sz399001',timeout=3).read().decode('gbk')
+        idx_info=[]
+        for ln in raw.strip().split(chr(10)):
+            d=ln.split('~')
+            if len(d)>32:
+                idx_info.append(f"{d[1]} {float(d[3]):.0f} {d[32]}%")
+        if idx_info:
+            lines.append('  '.join(idx_info))
+    except: pass
     
     if important:
-        lines.append("")
-        lines.append("━━ 交易/告警 ━━")
-        for a in important[-8:]:
-            act = a.get('action','?')
-            code = a.get('code','?')
-            name = a.get('name','?')
-            price = a.get('price', 0)
-            emoji = {'BUY':'💰','SELL':'📈','BOARD_LIGHTNING':'⚡','STOP_LOSS':'🛑'}.get(act,'📋')
-            lines.append(f"{emoji} {act} {name}({code}) @¥{price} {a.get('time','')}")
+        buys = [a for a in important if a.get('action') == 'BUY']
+        sells = [a for a in important if a.get('action') in ('SELL', 'STOP_LOSS')]
+        boards = [a for a in important if a.get('action') in ('BOARD_LIGHTNING', 'BOARD')]
+        
+        if buys:
+            lines.append("")
+            lines.append("💰 买入:")
+            for a in buys[-5:]:
+                lines.append(f"  {a['name']}({a['code']}) {a.get('quantity','?')}股 @¥{a['price']} {a.get('time','')}")
+        if sells:
+            lines.append("")
+            lines.append("📉 卖出:")
+            for a in sells[-5:]:
+                lines.append(f"  {a['name']}({a['code']}) {a.get('quantity','?')}股 @¥{a['price']} {a.get('time','')}")
+        if boards:
+            lines.append("")
+            lines.append("⚡ 打板:")
+            for a in boards[-3:]:
+                lines.append(f"  {a['name']}({a['code']}) @¥{a['price']} {a.get('time','')}")
     
     if sigs:
-        # 信号去重摘要
-        from collections import Counter
-        sig_count = Counter()
-        latest = {}
+        # 简洁信号: 按涨幅排序,去重去噪
+        seen = {}
+        top_chg = []
         for s in sigs:
-            key = f"{s.get('name','?')}({s.get('code','?')})"
-            sig_count[key] += 1
-            latest[key] = s
+            code = s.get('code','')
+            chg = s.get('price', 0)
+            try:
+                chg_pct = float(str(s.get('result','')).split('+')[1].split('%')[0]) if '+' in str(s.get('result','')) else 0
+            except: chg_pct = 0
+            if code not in seen or chg_pct > seen[code][0]:
+                seen[code] = (chg_pct, s)
+        for code, (pct, s) in seen.items():
+            top_chg.append((pct, s))
+        top_chg.sort(key=lambda x: -x[0])
         
-        hot = [(k,v) for k,v in sig_count.items() if v >= 1]
-        hot.sort(key=lambda x: -x[1])
-        
-        if hot:
+        if top_chg:
             lines.append("")
-            lines.append(f"━━ 信号({len(sigs)}条/{len(sig_count)}只) ━━")
-            for name, cnt in hot[:5]:
-                s = latest[name]
-                desc = s.get('result','')[:40].replace(name[:4], '').strip()
-                lines.append(f"  {name} ×{cnt}  ¥{s.get('price')}  {desc}")
-            if len(hot) > 8:
-                lines.append(f"  ...还有{len(hot)-5}只活跃")
+            lines.append(f"━━ 📡 关注({len(top_chg)}只) ━━")
+            for pct, s in top_chg[:10]:
+                code = s['code']
+                name = s.get('name','?')
+                price = s.get('price', 0)
+                lines.append(f"  {code} {name} +{pct:.1f}% ¥{price}")
     
     msg = '\n'.join(lines)
     
