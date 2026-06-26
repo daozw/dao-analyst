@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """实时监控 V1.0 — 3秒轮询,盯盘+触发交易,替代cron轮询"""
-import sys, os, json, time, signal, fcntl, urllib.request, ssl
+import sys, os, json, time, signal, urllib.request, ssl
 from datetime import datetime
 from signal_catcher import capture as catch_signal
 
@@ -114,8 +114,7 @@ def hold_score(code, pos, px, open_price, hold_minutes):
         # 委比: 委托买卖比, < -50%表示卖单积压
         if comm < -50:
             score -= 1; reasons.append(f'委比{comm:.0f}%卖压-1')
-    except Exception as e:
-                    pass  # signal capture inner
+    except: pass
     
     # ── 逐笔分析(东财Level-2, 仅在HTSC持仓时启用) ──
     try:
@@ -125,8 +124,7 @@ def hold_score(code, pos, px, open_price, hold_minutes):
         if abs(tick_s) >= 2:
             score += tick_s
             reasons.append(f'逐笔{tick_s:+d}({tick_r["verdict"]})')
-    except Exception as e:
-                    pass  # signal capture inner
+    except: pass
     
     return score, reasons
 
@@ -183,12 +181,13 @@ def get_mx_positions_file():
     try:
         sys.path.insert(0, os.path.expanduser('~/dao-analyst'))
         from pipeline.autotrade import get_mx_positions, load_evolve_params
-        mx_pos, total, _ = get_mx_positions()
+        mx_pos, total, _ = get_mx_positions(); _ = str(type(mx_pos))
         bp = load_evolve_params()
         sl_pct = bp.get('stop_loss_pct', -0.06)
         tp1_pct = bp.get('tp_half_pct', 0.08)
         tp2_pct = bp.get('tp_clear_pct', 0.15)
-        for code, pos in mx_pos.items():
+        if _ == "<class 'list'>" or isinstance(mx_pos, list): mx_pos = {p.get("code",p.get("secCode","")): p for p in mx_pos if p}
+        for code, pos in (mx_pos.items() if hasattr(mx_pos,"items") else []):
             cost = pos['cost']
             positions[code] = {
                 'account': 'MX', 'name': pos['name'],
@@ -210,8 +209,7 @@ def get_mx_positions_file():
             try:
                 with open('/tmp/dao_alert_critical.txt', 'a') as f:
                     f.write(f"[{time.strftime('%H:%M:%S')}] HTSC连接异常: {resp}\n")
-            except Exception as e:
-                    pass  # signal capture inner
+            except: pass
             return positions
         if resp.get('ok'):
             for p in resp.get('data', {}).get('positions', []):
@@ -255,11 +253,13 @@ def exec_sell(code, name, price, qty, account):
 
 def exec_board_buy(code, name, price, qty):
     global last_trade_time
-    # ── 每票限制: 最多3次, 5分钟冷却 ──
+    # ── 每票限制: 最多2次, 10分钟冷却 ──
     if code not in _board_attempts:
         _board_attempts[code] = []
     attempts = _board_attempts[code]
-    if len(attempts) >= 3:
+    if len(attempts) >= 2:
+        return False
+    if attempts and time.time() - attempts[-1] < 600:
         return False
     if attempts and time.time() - attempts[-1] < 300:
         return False
@@ -279,8 +279,7 @@ def exec_board_buy(code, name, price, qty):
         try:
             with open('/tmp/dao_alert_critical.txt', 'a') as f:
                 f.write(f"[{time.strftime('%H:%M:%S')}] HTSC交易失败 {name}({code}): {e}\n")
-        except Exception as e:
-                    pass  # signal capture inner
+        except: pass
         return False
 
 # ── 监控 ──
@@ -323,11 +322,10 @@ def check_positions(positions, prices):
             exec_sell(code, pos['name'], price, sell_qty, pos['account'])
 
 def check_board_candidates(prices, positions=None):
-    if positions is None: positions = {}
     """实时打板扫描: 从board_pool中检测涨幅7-9.5%+量比>2的标的"""
     if positions is None:
         positions = get_positions()
-    pos_codes = set(positions.keys()) if positions and hasattr(positions,"keys") else set()
+    pos_codes = set(positions.keys())
     
     # 从board_scan.json获取候选列表(作为补充)
     board_codes = set()
@@ -392,10 +390,9 @@ def check_board_candidates(prices, positions=None):
         exec_board_buy(code, px['name'], price, qty)
 
 def check_band_signals(prices, pool, positions=None):
-    if positions is None: positions = {}
     if positions is None:
         positions = get_positions()
-    pos_codes = set(positions.keys()) if positions and hasattr(positions,"keys") else set()
+    pos_codes = set(positions.keys())
     
     sig_file = '/tmp/dao_band_signals.json'
     try:
@@ -411,13 +408,13 @@ def check_band_signals(prices, pool, positions=None):
         if px['chg']>=5 or px['chg']<=-2: continue
         if px['vol_ratio']<0.5: continue
         if px['price']<3 or px['price']>50: continue
-        # 波段过滤(成交额为主)
-        name_bd2 = px.get('name','')
-        if 'ST' in name_bd2: continue
-        amt_bd2 = px.get('amount',0)
-        if 0 < amt_bd2 < 3000: continue  # 日成交<3000万
-        mcap_bd2 = px.get('mcap',0)
-        if 0 < mcap_bd2 < 20: continue  # 市值<20亿
+        # 波段垃圾过滤(市值≥30亿)
+        name_band = px.get('name','')
+        if 'ST' in name_band: continue
+        mcap_band = px.get('mcap',0)
+        if 0 < mcap_band < 30: continue
+        amt_band = px.get('amount',0)
+        if 0 < amt_band < 1000: continue
         
         score = 0
         if px['chg']>0: score+=15
@@ -437,10 +434,6 @@ def main():
     global running
     with open(PID_FILE, 'w') as f:
         f.write(str(os.getpid()))
-        _lock_fd = open("/tmp/realtime_monitor.lock", "w")
-        fcntl.flock(_lock_fd, fcntl.LOCK_EX)
-        print("[LOCK] 旧进程已死, 重新获取锁")
-
     
     log("🚀 实时监控启动")
     
@@ -464,7 +457,6 @@ def main():
         all_codes = ['600900']
     
     _pos_cache = {}
-    positions = {}
     cycle = 0
     # 交易日检测: 周末退出
     from datetime import datetime as _dtnow
@@ -527,31 +519,22 @@ def main():
                         log(f"🔴 熔断中! 跌停{bs.get('limit_down','?')}只,暂停交易")
                         time.sleep(30)
                         continue
-                except Exception as e:
-                    pass  # signal capture inner
+                except: pass
             
             if positions:
                 check_positions(positions, prices)
             # ── 信号捕捉(提前量,每只股票检测盘口+量能+加速度) ──
-            # 信号日志冷却(同票同类型300秒内不重复记录)
-            _sig_log_cooldown = {}
             for code, px in prices.items():
                 name = px.get('name', '')
                 try:
                     sigs = catch_signal(code, name, px, commit=True)
                     for s in sigs:
-                        key = f"{code}_{s['type']}"
-                        now_ts = time.time()
-                        if now_ts - _sig_log_cooldown.get(key, 0) >= 300:
-                            log(s['msg'])
-                            _sig_log_cooldown[key] = now_ts
+                        log(s['msg'])
                         try:
                             from pipeline.trade_notify import queue_alert
                             queue_alert('🚀SIG', s['code'], s['name'], s['price'], 0, 0, s['msg'])
-                        except Exception as e:
-                            pass  # queue_alert may fail
-                except Exception as e:
-                    pass  # signal capture may fail
+                        except: pass
+                except: pass
             # 打板扫描仅在9:20-15:00运行
             now_dt = _dtnow.now()
             if (now_dt.hour == 9 and now_dt.minute >= 20) or (now_dt.hour > 9 and now_dt.hour < 15) and now_dt.weekday() < 5:
@@ -565,8 +548,7 @@ def main():
                 try:
                     json.dump({'attempts': dict(_board_attempts), 'ts': time.time()},
                               open('/tmp/realtime_monitor_state.json', 'w'))
-                except Exception as e:
-                    pass  # signal capture inner
+                except: pass
             if cycle % 100 == 0:
                 log(f"💓 第{cycle}轮 持仓{len(positions)}只")
                 # 日志裁剪: 保留最近5000行
@@ -576,13 +558,11 @@ def main():
                     if len(lines) > 6000:
                         with open(LOG_FILE, 'w') as lf:
                             lf.writelines(lines[-5000:])
-                except Exception as e:
-                    pass  # signal capture inner
+                except: pass
         except Exception as e:
             log(f"异常: {e}")
         time.sleep(3)
     
-    _lock_fd.close()
     log("🛑 实时监控停止")
     if os.path.exists(PID_FILE):
         os.remove(PID_FILE)
