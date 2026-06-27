@@ -533,8 +533,10 @@ def main():
                         try:
                             from pipeline.trade_notify import queue_alert
                             queue_alert('🚀SIG', s['code'], s['name'], s['price'], 0, 0, s['msg'])
-                        except: pass
-                except: pass
+                        except Exception as e:
+                            log(f"queue_alert失败: {e}")
+                except Exception as e:
+                    log(f"信号捕获异常: {e}")
             # 打板扫描仅在9:20-15:00运行
             now_dt = _dtnow.now()
             if (now_dt.hour == 9 and now_dt.minute >= 20) or (now_dt.hour > 9 and now_dt.hour < 15) and now_dt.weekday() < 5:

@@ -16,5 +16,49 @@
    "WeChat channel inactive ~15min (auto-repair via channel_guard)",
    "patrol_log.json was missing (created now)"
   ]
+ },
+ {
+  "time": "2026-06-27T02:26:00.938201",
+  "type": "general_patrol_02",
+  "disk": "2% used, 617Gi free",
+  "disk_status": "OK",
+  "evolution_age_days": 9,
+  "evolution_status": "WARN (>7 days)",
+  "wechat_channel": "configured but inactive (2AM Saturday, expected)",
+  "wechat_status": "OK",
+  "feishu_channel": "tools available",
+  "feishu_status": "OK",
+  "channel_guard": "running every 15min via crontab",
+  "cron_status": "crontab lottery + A股 entries present",
+  "issues": [
+   "EVOLUTION.md 9天未更新，超7天阈值",
+   "4个DP gateway cron全部ERROR（Feishu投递缺chat_id）",
+   "通用巡检 gateway cron ERROR",
+   "patrol_log.json未被daily_patrol.py自动更新",
+   "crontab 19:30/19:55在开奖前运行（无意义）",
+   "缺少02:30 DP每日进化gateway cron"
+  ]
+ },
+ {
+  "time": "2026-06-27T14:26:05.982109",
+  "type": "general_patrol_14",
+  "disk": "2%, 617Gi",
+  "disk_status": "OK",
+  "evolution_age_days": 9,
+  "evolution_status": "WARN (>7 days)",
+  "gateway": "OK PID=14625",
+  "gateway_cron": "2 entries, both OK (cleaned up 5 ERROR entries)",
+  "channel_guard": "gateway cron + crontab both active",
+  "issues": [
+   "EVOLUTION.md 9天未更新（patrol报17天）",
+   "缺少02:30 DP每日进化gateway cron",
+   "crontab 19:30/19:55开奖前运行（已知低优）",
+   "每日自动批准进化提案gateway cron已移除（需确认是否预期）"
+  ],
+  "improvements": [
+   "5个ERROR gateway cron已清理",
+   "channel_guard新增gateway cron条目",
+   "通用巡检gateway cron恢复正常"
+  ]
  }
 ]

@@ -163,6 +163,12 @@ if __name__ == '__main__':
     print(run())
 
 
+# ── AI摘要
+    try:
+        import subprocess,os
+        subprocess.run([os.path.expanduser("~/dao-analyst/.venv/bin/python3"),os.path.expanduser("~/dao-analyst/weekend_ai_digest.py")],timeout=300)
+    except:pass
+
 # ── 写relay文件供自动推送 ──
 try:
     import os
