@@ -582,11 +582,5 @@ if __name__ == "__main__":
         print(result)
 
 def get_mx_positions():
-    """MX模拟持仓查询"""
-    try:
-        import requests, time, hashlib, json
-        url = "https://moni.eastmoney.com/api/position/list"
-        # 简化版：返回空持仓
-        return {}, 0.0, 0.0
-    except Exception as e:
-        return {}, 0.0, 0.0
+    """MX模拟持仓查询 → 委托 get_band_positions (UnifiedTrader)"""
+    return get_band_positions()

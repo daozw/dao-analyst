@@ -101,6 +101,12 @@ def main(weekend=False):
         with open(ALERT_FILE,'w') as f: json.dump(al,f,ensure_ascii=False,indent=2)
     except: pass
 
+# ── 日报摘要
+    try:
+        import subprocess,os
+        subprocess.run([os.path.expanduser("~/dao-analyst/.venv/bin/python3"),os.path.expanduser("~/dao-analyst/daily_digest.py")],timeout=30)
+    except:pass
+
 if __name__=="__main__":
     import sys
     weekend='--weekend' in sys.argv
