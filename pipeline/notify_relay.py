@@ -72,8 +72,8 @@ def get_thermo():
 
 def get_pos():
     try:
-        from pipeline.autotrade import get_band_positions
-        pos, tv, tp = get_band_positions()
+        from pipeline.autotrade import get_mx_positions
+        pos, tv, tp = get_mx_positions()
         return pos, tv, tp
     except:
         return {}, 0, 0

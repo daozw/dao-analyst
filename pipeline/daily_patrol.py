@@ -77,6 +77,23 @@ def check_channel():
     except Exception as e:
         return ("❌", f"channel_guard异常: {e}", True)
 
+
+def check_log_rotation():
+    """Check and rotate oversized log files"""
+    max_size = 1 * 1024 * 1024  # 1MB
+    rotated = []
+    for log_name in ['notify_relay.log', 'relay_cron.log']:
+        log_path = HOME / 'dao-analyst' / 'logs' / log_name
+        if log_path.exists() and log_path.stat().st_size > max_size:
+            bak = log_path.with_suffix('.log.old')
+            log_path.rename(bak)
+            log_path.write_text(f'# Log rotated at {ts()}' + chr(10))
+            rotated.append(log_name)
+    if rotated:
+        return ("⚠️", f"日志轮转: {', '.join(rotated)}", False)
+    else:
+        return ("✅", "日志大小正常", False)
+
 def check_gateway():
     try:
         # macOS pgrep 15char limit, use ps like channel_guard does
@@ -113,6 +130,10 @@ def run():
     status, detail, alert = check_channel()
     results["微信通道"] = {"status": status, "detail": detail}
     if alert: alerts.append(f"微信: {detail}")
+
+    status, detail, alert = check_log_rotation()
+    results["日志轮转"] = {"status": status, "detail": detail}
+    if alert: alerts.append(f"日志: {detail}")
 
     log_entry(results)
 

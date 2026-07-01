@@ -33,6 +33,11 @@ def _get_band_trader():
     from trader import UnifiedTrader
     return UnifiedTrader(strategy="band")
 
+def _get_board_trader():
+    """获取打板专用交易通道(MX妙想)"""
+    from trader import UnifiedTrader
+    return UnifiedTrader(strategy="board")
+
 
 
 EVOLVE_PARAMS_FILE = os.path.join(BASE, "data", "evolve_params.json")
@@ -52,8 +57,29 @@ def get_param(key, default):
     return bp.get(key, default)
 
 def get_band_positions():
-    """获取波段持仓(通过UnifiedTrader→MX)"""
+    """获取波段持仓(通过UnifiedTrader→MX v2格式)"""
     trader = _get_band_trader()
+    resp = trader.positions()
+    data = resp.get("data", resp)
+    # MX API v2: positions/stockCode/stockName/quantity/marketValue
+    pl = data.get("positions", data.get("posList", []))
+    pos, tv, tp = {}, 0, 0
+    for p in pl:
+        code = p.get("stockCode", p.get("secCode", p.get("code","")))
+        qty = p.get("quantity", p.get("count", p.get("qty",0)))
+        cost = p.get("costPrice", 0)
+        value = p.get("marketValue", p.get("value", 0))
+        profit = p.get("profit", 0)
+        tv += value; tp += profit
+        pos[code] = {"name": p.get("stockName", p.get("secName", p.get("name",""))), "qty": qty, "cost": cost, "value": value,
+                     "profit": profit, "profit_pct": p.get("profitPct", p.get("profit_pct",0)),
+                     "account": "band"}
+    return pos, tv, tp
+
+
+def get_board_positions():
+    """获取打板持仓(通过UnifiedTrader→MX v1格式, 千分位缩放)"""
+    trader = _get_board_trader()
     resp = trader.positions()
     data = resp.get("data", resp)
     pl = data.get("posList", [])
@@ -61,14 +87,15 @@ def get_band_positions():
     for p in pl:
         code = p.get("secCode", p.get("code",""))
         qty = p.get("count", p.get("qty",0))
-        cost = p.get("costPrice", 0)
-        if isinstance(cost, (int, float)) and cost > 10000:
-            cost = cost / (10**p.get("costPriceDec", 3))
-        value = p.get("value", 0) / 1000 if p.get("value", 0) > 10000 else p.get("value", 0)
-        profit = p.get("profit", 0) / 1000 if abs(p.get("profit", 0)) > 10000 else p.get("profit", 0)
+        # v1格式: costPrice需要/costPriceDec, price需要/priceDec
+        cost_dec = p.get("costPriceDec", 3)
+        cost = round(p.get("costPrice", 0) / (10 ** cost_dec), 2)
+        value = p.get("value", 0)
+        profit = p.get("profit", 0)
         tv += value; tp += profit
         pos[code] = {"name": p.get("secName", p.get("name","")), "qty": qty, "cost": cost, "value": value,
-                     "profit": profit, "profit_pct": p.get("profitPct", p.get("profit_pct",0))}
+                     "profit": profit, "profit_pct": p.get("profitPct", 0),
+                     "account": "board"}
     return pos, tv, tp
 
 
@@ -582,5 +609,12 @@ if __name__ == "__main__":
         print(result)
 
 def get_mx_positions():
-    """MX模拟持仓查询 → 委托 get_band_positions (UnifiedTrader)"""
-    return get_band_positions()
+    """MX模拟持仓查询 → 合并波段+打板两个账户"""
+    band_pos, band_tv, band_tp = get_band_positions()
+    board_pos, board_tv, board_tp = get_board_positions()
+    # 合并: 波段优先, 打板补充(同代码不覆盖)
+    merged = dict(board_pos)
+    merged.update(band_pos)
+    total_value = band_tv + board_tv
+    total_profit = band_tp + board_tp
+    return merged, total_value, total_profit
