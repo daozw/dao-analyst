@@ -74,7 +74,11 @@ except:
 print("\n🧹 周一清仓:")
 cf = "/tmp/dao_board_candidates.json"
 if os.path.exists(cf):
-    all_ok &= check("旧候选文件已清除", False, "请手动 rm")
+    try:
+        os.remove(cf)
+        all_ok &= check("旧候选文件已清除", True)
+    except Exception as e:
+        all_ok &= check("旧候选文件已清除", False, f"无法删除: {e}")
 else:
     all_ok &= check("候选文件干净", True)
 

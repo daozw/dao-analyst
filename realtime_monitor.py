@@ -325,6 +325,8 @@ def check_board_candidates(prices, positions=None):
     """实时打板扫描: 从board_pool中检测涨幅7-9.5%+量比>2的标的"""
     if positions is None:
         positions = get_positions()
+    if positions is None:
+        positions = {}
     pos_codes = set(positions.keys())
     
     # 从board_scan.json获取候选列表(作为补充)
@@ -392,6 +394,8 @@ def check_board_candidates(prices, positions=None):
 def check_band_signals(prices, pool, positions=None):
     if positions is None:
         positions = get_positions()
+    if positions is None:
+        positions = {}
     pos_codes = set(positions.keys())
     
     sig_file = '/tmp/dao_band_signals.json'
@@ -521,6 +525,8 @@ def main():
                         continue
                 except: pass
             
+            if not positions:
+                positions = {}
             if positions:
                 check_positions(positions, prices)
             # ── 信号捕捉(提前量,每只股票检测盘口+量能+加速度) ──

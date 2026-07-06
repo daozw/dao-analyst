@@ -96,21 +96,20 @@ EOF
 
 NOW=$(date '+%H:%M:%S')
 
-HTTP_CODE=$(curl -s -o /tmp/relay_response.txt -w "%{http_code}" \
-  -X POST "${BASE_URL}/ilink/bot/sendmessage" \
-  -H "Content-Type: application/json" \
-  -H "AuthorizationType: ilink_bot_token" \
-  -H "iLink-App-Id: bot" \
-  -H "iLink-App-ClientVersion: 132099" \
-  -H "Authorization: Bearer ${BOT_TOKEN}" \
-  -d "$BODY" \
-  --max-time 15 2>/dev/null)
+# 通过openclaw message send发送 (Gateway插件通道)
+OPENCLAW_MSG=$(python3 -c "
+import sys, json
+with open('$RELAY_FILE') as f:
+    text = f.read()[:800]
+print(json.dumps(text))
+")
+openclaw message send   --channel openclaw-weixin   --target "$TARGET"   --message "$OPENCLAW_MSG"   --timeout-ms 15000 > /tmp/relay_gw_resp.txt 2>/dev/null
 
-if [ "$HTTP_CODE" = "200" ]; then
+if grep -q '"messageId"' /tmp/relay_gw_resp.txt 2>/dev/null; then
     cp "$FP_FILE" "$FP_SENT" 2>/dev/null
     echo "$CORE" > "$CONTENT_SENT"
-    echo "[$NOW] ✅" >> "$LOG_FILE"
+    echo "[$NOW] ✅ gw" >> "$LOG_FILE"
 else
-    RESP=$(cat /tmp/relay_response.txt 2>/dev/null | head -c 200)
-    echo "[$NOW] ❌ HTTP=$HTTP_CODE $RESP" >> "$LOG_FILE"
+    RESP=$(cat /tmp/relay_gw_resp.txt 2>/dev/null | head -c 200)
+    echo "[$NOW] ❌ gw-fail: $RESP" >> "$LOG_FILE"
 fi

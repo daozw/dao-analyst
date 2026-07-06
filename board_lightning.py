@@ -9,6 +9,7 @@ ALERT_FILE = "/tmp/dao_trade_alerts.json"
 STATE_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "state", "board_lightning.json")
 MIN_GAP = 7.0; MAX_PRICE = 30
 BOARD_CAPITAL = 12000
+MAX_BOARD_POSITIONS = 8          # 打板账户总持仓上限
 MAX_DAILY_STOCKS = 3
 
 def alert(action, msg):
@@ -94,8 +95,11 @@ def check_market_safety():
         d = raw.split('~')
         if len(d) > 32:
             open_px = float(d[5]) if d[5] else 0
+            cur_px = float(d[3]) if d[3] else 0
             pre = float(d[4]) if d[4] else 0
-            if pre > 0 and (open_px - pre) / pre < -0.01:
+            # 竞价期间今开=0，用当前价代替
+            px = open_px if open_px > 0 else cur_px
+            if pre > 0 and px > 0 and (px - pre) / pre < -0.01:
                 return False, "大盘低开>1%→谨慎"
     except: pass
     
@@ -151,9 +155,27 @@ def execute_orders():
         return
     
     candidates = json.load(open(candidate_file))
+    max_orders = 2  # 默认
+    # 检查当前打板持仓数,避免越滚越多
+    try:
+        from trader import UnifiedTrader
+        board_trader = UnifiedTrader(strategy="board")
+        resp = board_trader.positions()
+        pos_list = resp.get("data", dict()).get("posList", [])
+        # 只统计有实际持仓的(count>0且availCount>0)
+        active_pos = [p for p in pos_list if p.get('count', 0) > 0 and p.get('availCount', 0) > 0]
+        current_pos_count = len(active_pos)
+        if current_pos_count >= MAX_BOARD_POSITIONS:
+            print(f"  ! 打板持仓{current_pos_count}只已达上限{MAX_BOARD_POSITIONS}, 跳过新买入")
+            return
+        remaining = MAX_BOARD_POSITIONS - current_pos_count
+        max_orders = min(max_orders, remaining)
+        print(f"  当前持仓{current_pos_count}只, 可新增{remaining}只")
+    except Exception as e:
+        print(f"  仓位查询失败: {e}, 继续执行(最多{max_orders}只)")
+    
     print(f"📋 读取{candidate_file}: {len(candidates)}只候选")
     
-    max_orders = 2
     try:
         from market_thermometer_v2 import get_thermometer
         t = get_thermometer()

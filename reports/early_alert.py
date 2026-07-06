@@ -9,6 +9,7 @@ def run():
     out.append(f'(距开盘15分钟)')
     
     # 温度
+    temp = None
     try:
         from market_thermometer_v2 import get_thermometer, get_rsi, rsi_signal
         temp = get_thermometer()

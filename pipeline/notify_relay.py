@@ -127,10 +127,26 @@ def relay():
     buy_ids = [a.get('code', '') for a in buys]
     sell_ids = [a.get('code', '') for a in sells]
 
+    # 交易信号变化检测
+    trade_sig_ids = []
+    try:
+        from signal_catcher import recent
+        trade_sigs = recent(20)
+        for s in trade_sigs:
+            t = s.get('type', '')
+            if '抢板' in t or ('启动' in t and s.get('chg', 0) >= 2):
+                trade_sig_ids.append(s['code'])
+            elif ('翻转' in t or '大单' in t) and s.get('priority', 99) <= 6 and s.get('chg', 0) >= 3:
+                trade_sig_ids.append(s['code'])
+        trade_sig_ids = list(dict.fromkeys(trade_sig_ids))[:5]  # 去重+限5
+    except:
+        trade_sig_ids = []
+
     has_change = (
         sig_ids != state.get('last_signals', []) or
         buy_ids != state.get('last_buys', []) or
-        sell_ids != state.get('last_sells', [])
+        sell_ids != state.get('last_sells', []) or
+        trade_sig_ids != state.get('last_trade_sigs', [])
     )
     if not has_change and (now_ts - state.get('last_push', 0)) < PUSH_INTERVAL:
         return None
@@ -177,6 +193,30 @@ def relay():
             new_mark = " 🆕" if code not in state.get('last_signals', []) else ""
             lines.append(f"  {code} {name} {pct:+.1f}% ¥{price}{new_mark}")
 
+    # 交易信号: 从signal_catcher获取可操作信号
+    try:
+        from signal_catcher import recent
+        trade_sigs = recent(20)
+        actionable = []
+        for s in trade_sigs:
+            t = s.get('type', '')
+            # 只推高价值信号: 抢板(⚡), 启动(🚀), 高优先级翻转/大单
+            if '抢板' in t or ('启动' in t and s.get('chg', 0) >= 2):
+                actionable.append(s)
+            elif ('翻转' in t or '大单' in t) and s.get('priority', 99) <= 6 and s.get('chg', 0) >= 3:
+                actionable.append(s)
+            if len(actionable) >= 5:
+                break
+        if actionable:
+            lines.append(f"\n🎯 交易信号({len(actionable)}条)")
+            seen = set()
+            for s in actionable[:5]:
+                key = s['code']
+                if key not in seen:
+                    seen.add(key)
+                    lines.append(f"  {s['msg']}")
+    except: pass
+
     msg = '\n'.join(lines)
 
     # 写入文件
@@ -190,6 +230,7 @@ def relay():
     state['last_signals'] = sig_ids
     state['last_buys'] = buy_ids
     state['last_sells'] = sell_ids
+    state['last_trade_sigs'] = trade_sig_ids
     save_state(state)
     return msg
 

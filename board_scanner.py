@@ -8,7 +8,7 @@ ssl._create_default_https_context = ssl._create_unverified_context
 
 def _log(msg):
     from datetime import datetime
-    print(f"[{datetime.now().strftime("%H:%M:%S")}] {msg}", file=__import__("sys").stderr)
+    print(f"[{datetime.now().strftime('%H:%M:%S')}] {msg}", file=__import__("sys").stderr)
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from board_tracker import BoardAnalyzer
@@ -234,7 +234,7 @@ def queue_alert(code, name, price, chg, grade, risk, strategy, reason, sector_ok
         try: alerts = json.load(open(ALERT_FILE))
         except: pass
     alerts.append({
-        "time": datetime.now().strftime("%H:%M:%S"),
+        "time": datetime.now().strftime('%H:%M:%S'),
         "action": "BOARD",
         "code": code, "name": name, "price": price, "chg": chg,
         "grade": grade, "risk": risk, "strategy": strategy,

@@ -47,6 +47,22 @@ def is_trading_time():
 
 
 def get_positions():
+    """优先MX API实时持仓，fallback本地文件"""
+    try:
+        sys.path.insert(0, os.path.expanduser('~/dao-analyst'))
+        from pipeline.autotrade import get_mx_positions
+        mx_pos, total, _ = get_mx_positions()
+        if mx_pos:
+            result = []
+            for code, p in mx_pos.items():
+                result.append({
+                    'code': code, 'name': p['name'],
+                    'qty': p['qty'], 'cost': p['cost'],
+                    'account': p.get('account', 'MX')
+                })
+            return result
+    except Exception as e:
+        log(f"MX API failed, fallback to file: {e}")
     if not os.path.exists(POSITIONS_FILE):
         return []
     with open(POSITIONS_FILE) as f:
