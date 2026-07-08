@@ -347,7 +347,7 @@ def get_trader():
             from trader import UnifiedTrader
             _trader_instance = UnifiedTrader()
         elif mode == 'MX':
-            from pipeline.autotrade import MXTrader
+            # MXTrader defined in this file (line 277)
             _trader_instance = MXTrader()
         else:
             from trader import UnifiedTrader

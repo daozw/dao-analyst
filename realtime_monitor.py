@@ -168,6 +168,16 @@ def batch_prices(codes):
 # ── 持仓 ──
 def get_positions():
     positions = {}
+    CACHE_FILE = '/tmp/realtime_positions_cache.json'
+    
+    # 读取上次缓存(API故障时fallback)
+    cached_positions = {}
+    try:
+        if os.path.exists(CACHE_FILE):
+            with open(CACHE_FILE) as f:
+                cached_positions = json.load(f)
+    except:
+        cached_positions = {}
     
     # MX模拟持仓 (止损止盈从成本价计算)
 def get_mx_positions_file():
@@ -231,6 +241,17 @@ def get_mx_positions_file():
                 positions[code] = pos
     except Exception as e:
         log(f"华泰持仓: {e}")
+    # 保存缓存(API可用时)
+    if positions:
+        try:
+            with open(CACHE_FILE, 'w') as f:
+                json.dump(positions, f)
+        except:
+            pass
+    elif cached_positions:
+        # API返回空但缓存有效 → fallback
+        log(f"MX API返回空, 使用缓存({len(cached_positions)}只)")
+        positions = cached_positions
     return positions
 
 # ── 交易 ──

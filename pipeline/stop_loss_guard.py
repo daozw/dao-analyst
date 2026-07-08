@@ -55,9 +55,14 @@ def get_positions():
         if mx_pos:
             result = []
             for code, p in mx_pos.items():
+                # 计算实时价格: marketValue/qty, fallback到cost
+                val = p.get('value', 0)
+                q = max(p.get('qty', 1), 1)
+                cur_price = round(val / q, 2) if val and q else p['cost']
                 result.append({
                     'code': code, 'name': p['name'],
-                    'qty': p['qty'], 'cost': p['cost'],
+                    'qty': q, 'cost': p['cost'],
+                    'last_price': cur_price,
                     'account': p.get('account', 'MX')
                 })
             return result
@@ -128,7 +133,10 @@ def check_and_stop(dry_run=False):
         name = pos.get("name", code)
         cost = pos.get("cost", pos.get("buy_price", 0))
         quantity = pos.get("quantity", pos.get("volume", 0))
-        current = current_prices.get(code, pos.get("last_price", cost))
+        # 优先使用持仓数据中的实时价格, fallback到交易日志
+        current = pos.get('last_price', pos.get('cost', 0))
+        if current <= 0 or current == pos.get('cost', 0):
+            current = current_prices.get(code, current)
 
         if cost <= 0 or quantity <= 0:
             continue
@@ -147,7 +155,8 @@ def check_and_stop(dry_run=False):
             action_needed = False
 
         status = f"{level if action_needed else '✅'}"
-        log(f"{status} {name}({code}) 成本¥{cost:.2f} 现价¥{current:.2f} 盈亏{pnl_pct:+.1f}% {'→'+reason if action_needed else ''}")
+        current_display = current if current and current != cost else (pos.get('last_price', cost) if pos.get('last_price', cost) else cost)
+        log(f"{status} {name}({code}) 成本¥{cost:.2f} 现价¥{current_display:.2f} 盈亏{pnl_pct:+.1f}% {'→'+reason if action_needed else ''}")
 
         if action_needed:
             alerts.append({
