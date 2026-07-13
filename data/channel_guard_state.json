@@ -1,0 +1,1 @@
+{"last_restart_timestamps": [], "last_repair_time": 0, "gateway_uptime_verified": true, "_fix_note": "gateway_pid() false-negative bug fixed 2026-07-13 01:18 +0800 \u2014 was matching openclaw-gateway in comm which macOS truncates to node"}

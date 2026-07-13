@@ -40,17 +40,25 @@ def save_state(s):
     STATE_FILE.write_text(json.dumps(s, indent=2, ensure_ascii=False))
 
 def gateway_pid():
-    """macOS pgrep has a 15-char limit; use ps instead"""
+    """Detect gateway via ps - args-only match avoids false matches on our own detection commands"""
     try:
-        r = subprocess.run(["ps", "-eo", "pid,comm"], capture_output=True, text=True, timeout=5)
-        for line in r.stdout.split("\n"):
-            if "openclaw-gateway" in line:
-                parts = line.strip().split()
-                if parts and parts[0].isdigit():
-                    return parts[0]
-    except Exception as e:
-
-        pass  # skip non-ISO lines
+        r = subprocess.run(
+            ["pgrep", "-f", "embedded-gateway-runtime.*dist/index.js gateway"],
+            capture_output=True, text=True, timeout=5
+        )
+        if r.returncode == 0 and r.stdout.strip():
+            return r.stdout.strip().split("\n")[0]
+    except Exception:
+        pass
+    # Fallback: ps + precise grep
+    try:
+        r = subprocess.run(
+            ["sh", "-c", "ps -eo pid,args | grep -v grep | grep 'embedded-gateway-runtime.*index.js gateway' | awk '{print $1}' | head -1"],
+            capture_output=True, text=True, timeout=5
+        )
+        if r.stdout.strip().isdigit():
+            return r.stdout.strip()
+    except Exception:
         pass
     return None
 
