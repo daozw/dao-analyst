@@ -60,6 +60,26 @@ def gateway_pid():
             return r.stdout.strip()
     except Exception:
         pass
+    # Fallback 2: detect via 'openclaw' binary (native package / PATH)
+    try:
+        r = subprocess.run(
+            ["pgrep", "-x", "openclaw"],
+            capture_output=True, text=True, timeout=5
+        )
+        if r.returncode == 0 and r.stdout.strip():
+            return r.stdout.strip().split("\n")[0]
+    except Exception:
+        pass
+    # Fallback 3: detect via ps comm=openclaw (catches native openclaw process)
+    try:
+        r = subprocess.run(
+            ["sh", "-c", "ps -eo pid,comm | grep -v grep | grep 'openclaw' | awk '{print $1}' | head -1"],
+            capture_output=True, text=True, timeout=5
+        )
+        if r.stdout.strip().isdigit():
+            return r.stdout.strip()
+    except Exception:
+        pass
     return None
 
 def log_activity(minutes=15):
