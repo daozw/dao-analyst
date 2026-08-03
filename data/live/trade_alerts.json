@@ -195760,5 +195760,29 @@
     "amount": 0,
     "result": "🔄 盘口翻转 三星新材(603578) +1.2% 买方接管 失衡11%",
     "sent": false
+  },
+  {
+    "time": "09:30:05",
+    "action": "🚀SIG",
+    "code": "002015",
+    "name": "协鑫能科",
+    "price": 15.58,
+    "quantity": 0,
+    "amount": 0,
+    "result": "🚀 启动 协鑫能科(002015) +3.3% 量比14.8x 买盘增长",
+    "sent": false
+  },
+  {
+    "time": "09:30:06",
+    "action": "🚀SIG",
+    "code": "000037",
+    "name": "深南电A",
+    "price": 9.42,
+    "quantity": 0,
+    "amount": 0,
+    "result": "🚀 启动 深南电A(000037) +2.8% 量比5.0x 买盘增长",
+    "sent": false
+  }
+]lse
   }
 ]
