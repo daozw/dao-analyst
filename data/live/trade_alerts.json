@@ -195782,7 +195782,38 @@
     "amount": 0,
     "result": "🚀 启动 深南电A(000037) +2.8% 量比5.0x 买盘增长",
     "sent": false
-  }
-]lse
+  },
+  {
+    "time": "17:17:45",
+    "action": "SELL",
+    "code": "603201",
+    "name": "常润股份",
+    "price": 16.68,
+    "quantity": 600.0,
+    "amount": 10008.0,
+    "result": "失败",
+    "sent": false
+  },
+  {
+    "time": "17:48:02",
+    "action": "SELL",
+    "code": "603201",
+    "name": "常润股份",
+    "price": 16.68,
+    "quantity": 600.0,
+    "amount": 10008.0,
+    "result": "失败",
+    "sent": false
+  },
+  {
+    "time": "18:18:08",
+    "action": "SELL",
+    "code": "603201",
+    "name": "常润股份",
+    "price": 16.68,
+    "quantity": 600.0,
+    "amount": 10008.0,
+    "result": "失败",
+    "sent": false
   }
 ]
