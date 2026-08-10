@@ -103,9 +103,7 @@ with open('$RELAY_FILE') as f:
     text = f.read()[:800]
 print(json.dumps(text))
 ")
-/Applications/AutoClaw.app/Contents/Resources/node/darwin-arm64/node \
-  /Applications/AutoClaw.app/Contents/Resources/gateway/openclaw/openclaw.mjs \
-  message send   --channel openclaw-weixin   --target "$TARGET"   --message "$OPENCLAW_MSG"   --timeout-ms 15000 > /tmp/relay_gw_resp.txt 2>/dev/null
+openclaw message send   --channel openclaw-weixin   --target "$TARGET"   --message "$OPENCLAW_MSG"   --timeout-ms 15000 > /tmp/relay_gw_resp.txt 2>/dev/null
 
 if grep -q '"messageId"' /tmp/relay_gw_resp.txt 2>/dev/null; then
     cp "$FP_FILE" "$FP_SENT" 2>/dev/null

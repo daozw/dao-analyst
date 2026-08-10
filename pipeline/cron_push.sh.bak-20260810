@@ -15,9 +15,7 @@ CONTENT=$(cat "$PENDING" | head -20)
 echo "$(date '+%Y-%m-%d %H:%M:%S') PUSH $(wc -c < "$PENDING") bytes" >> "$LOG"
 
 # 用openclaw CLI推送到微信
-/Applications/AutoClaw.app/Contents/Resources/node/darwin-arm64/node \
-  /Applications/AutoClaw.app/Contents/Resources/gateway/openclaw/openclaw.mjs \
-  message send \
+/usr/local/bin/openclaw message send \
   --channel openclaw-weixin \
   --target "$TARGET" \
   --message "$CONTENT" \

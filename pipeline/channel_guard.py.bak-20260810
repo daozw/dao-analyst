@@ -128,10 +128,6 @@ def weixin_status(minutes=15):
                     continue
                 if "openclaw-weixin" not in line:
                     continue
-                # errcode -14 会话过期/暂停bot: 不是活跃, 是故障
-                if "session expired" in line or "pausing bot" in line or "errcode -14" in line:
-                    errors += 1
-                    continue
                 activity += 1
                 if "error" in line.lower() or "fail" in line.lower():
                     errors += 1
