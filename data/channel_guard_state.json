@@ -1,1 +1,19 @@
-{"last_restart_timestamps": [], "last_repair_time": 0, "gateway_uptime_verified": true, "_fix_note": "gateway_pid() false-negative bug fixed 2026-07-13 01:18 +0800 \u2014 was matching openclaw-gateway in comm which macOS truncates to node"}
+{
+ "last_restart_timestamps": [],
+ "last_repair_time": 0,
+ "gateway_uptime_verified": true,
+ "_fix_note": "gateway_pid() false-negative bug fixed 2026-07-13 01:18 +0800 — was matching openclaw-gateway in comm which macOS truncates to node",
+ "last_check": "2026-08-10T03:15:00+08:00",
+ "weixin": {
+  "status": "degraded",
+  "issue": "session expired errcode -14 since 08-09 19:39, hourly pause loop, needs user QR scan",
+  "alerted_24h": true,
+  "action": "no_duplicate_alert_night"
+ },
+ "feishu": {
+  "status": "degraded",
+  "issue": "feishu_token_unavailable (UAT) since 02:40, connector fails every 15min, needs user re-authorize",
+  "action": "alert_sent_via_dp"
+ },
+ "bot_channel_feishu": "reachable (dry-run ok)"
+}
