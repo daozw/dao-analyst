@@ -149,6 +149,9 @@ def scan():
 
 def execute_orders():
     '''读取候选文件,执行下单'''
+    if os.path.exists(os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "TRADE_PAUSED")):
+        print('🔒 交易暂停模式(TRADE_PAUSED标志存在): 跳过竞价下单')
+        return
     candidate_file = '/tmp/dao_board_candidates.json'
     if not os.path.exists(candidate_file):
         print("  无候选文件")

@@ -1,0 +1,78 @@
+# ═══════════════════════════════════════════════════════════════
+# DAO/DP 定时任务 — 重建于 2026-07-27
+# 系统 crontab + Gateway cron 双轨制
+# ═══════════════════════════════════════════════════════════════
+VENV=/Users/sound/dao-analyst/.venv/bin/python3
+DAODIR=/Users/sound/dao-analyst
+DPLOTTERY=/Users/sound/dp-lottery
+SHELL=/bin/zsh
+PATH=/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin
+MAILTO=""
+
+# ━━━ 通用巡检 (每天) ━━━
+0 2 * * * cd $DAODIR && $VENV pipeline/daily_patrol.py >> $DAODIR/logs/patrol_cron.log 2>&1
+0 14 * * * cd $DAODIR && $VENV pipeline/daily_patrol.py >> $DAODIR/logs/patrol_cron.log 2>&1
+
+# ━━━ 通道守护 (每15分钟) ━━━
+*/15 * * * * cd $DAODIR && $VENV pipeline/channel_guard.py >> $DAODIR/logs/channel_guard.log 2>&1
+
+# ━━━ 系统健康 (每天03:00) ━━━
+0 3 * * * cd $DAODIR && $VENV pipeline/daily_health.py >> $DAODIR/logs/health.log 2>&1
+
+# ━━━ Git同步 (每天) ━━━
+0 16 * * 1-5 /Users/sound/dao-analyst/auto_commit.sh >> /tmp/git_sync.log 2>&1
+30 22 * * * /Users/sound/dao-analyst/workspace_sync.sh >> /tmp/git_sync.log 2>&1
+
+# ━━━━ 盘前 (交易日) ━━━━
+# 周一系统预检
+55 8 * * 1 cd $DAODIR && $VENV pipeline/preflight.py >> $DAODIR/logs/preflight.log 2>&1
+
+# 竞价扫描 (09:22)
+22 9 * * 1-5 cd $DAODIR && $VENV board_lightning.py scan >> $DAODIR/logs/board_lightning.log 2>&1
+
+# 竞价下单 (09:23)
+# [TRADE-PAUSED 2026-08-12] 23 9 * * 1-5 cd $DAODIR && $VENV board_lightning.py --execute >> $DAODIR/logs/board_lightning.log 2>&1
+
+# ━━━━ 盘中 (交易日) ━━━━
+# 开盘启动监控 (09:30)
+30 9 * * 1-5 /Users/sound/dao-analyst/market_open.sh >> /tmp/market_open.log 2>&1
+
+# 波段交易监控 (每30分钟)
+# [TRADE-PAUSED 2026-08-12] */30 9-14 * * 1-5 /Users/sound/dao-analyst/band_monitor.sh >> $DAODIR/logs/band_monitor.log 2>&1
+
+# 实时监控看门狗 (每5分钟)
+*/5 9-15 * * 1-5 /Users/sound/dao-analyst/watchdog.sh >> /tmp/watchdog.log 2>&1
+
+# 午间简报 (12:00)
+0 12 * * 1-5 /Users/sound/dao-analyst/midday_routine.sh >> $DAODIR/logs/midday.log 2>&1
+
+# 玄悟自动交易 (10:00, 14:00)
+# [TRADE-PAUSED 2026-08-12] 0 10 * * 1-5 /Users/sound/dao-analyst/xuanwu_monitor.sh >> $DAODIR/logs/xuanwu.log 2>&1
+# [TRADE-PAUSED 2026-08-12] 0 14 * * 1-5 /Users/sound/dao-analyst/xuanwu_monitor.sh >> $DAODIR/logs/xuanwu.log 2>&1
+
+# ━━━━ 盘后 (交易日) ━━━━
+# 收盘停止监控 (15:00)
+0 15 * * 1-5 /Users/sound/dao-analyst/market_close.sh >> /tmp/market_close.log 2>&1
+
+# 收盘简报 (15:10)
+10 15 * * 1-5 /Users/sound/dao-analyst/closing_brief.sh >> $DAODIR/logs/closing.log 2>&1
+
+# 盘后回测 (15:15)
+15 15 * * 1-5 cd $DAODIR && $VENV pipeline/auto_backtest.py >> $DAODIR/logs/backtest.log 2>&1
+
+# 每日复盘 (20:15)
+15 20 * * 1-5 /Users/sound/dao-analyst/daily_review.sh >> $DAODIR/logs/review.log 2>&1
+
+# ━━━━ 晚间 (每天) ━━━━
+# 情报资讯 (23:00)
+0 23 * * * /Users/sound/dao-analyst/nightly_report.sh >> $DAODIR/logs/nightly.log 2>&1
+
+# ━━━━━ DP彩票 (每天) ━━━━━
+# 数据采集 (21:00)
+0 21 * * * /Users/sound/dp-lottery/run_pipeline.sh collect >> /Users/sound/dp-lottery/logs/pipeline_cron.log 2>&1
+
+# ━━━━ 推送检查 (每10分钟) ━━━━
+*/10 * * * * /Users/sound/dao-analyst/pipeline/cron_push.sh >> $DAODIR/logs/cron_push.log 2>&1
+
+# ━━━━ 月度再平衡 (每月1号 09:00) ━━━━
+# [TRADE-PAUSED 2026-08-12] 0 9 1 * * /Users/sound/dao-analyst/monthly_rebalance.sh >> $DAODIR/logs/rebalance.log 2>&1

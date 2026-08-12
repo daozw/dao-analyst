@@ -569,9 +569,14 @@ def auto_trade(dry_run=True):
 
 
 if __name__ == "__main__":
+    TRADE_PAUSED = os.path.exists(os.path.join(BASE, "data", "TRADE_PAUSED"))
+    if TRADE_PAUSED:
+        print('🔒 交易暂停模式(TRADE_PAUSED标志存在): 只出计划不下单')
     if "--plan" in sys.argv:
         # 计划模式: 生成交易计划,写入文件
         dry = "--real" not in sys.argv
+        if TRADE_PAUSED:
+            dry = True  # 暂停模式下强制dry-run
         result, executed = auto_trade(dry_run=dry)
         print(result)
         plan_file = '/tmp/dao_band_plan.json'
@@ -585,6 +590,9 @@ if __name__ == "__main__":
         print(f'\n📋 交易计划已写入 {plan_file}: {len(executed)}笔')
     elif "--execute" in sys.argv:
         # 执行模式: 读取计划,逐笔执行
+        if TRADE_PAUSED:
+            print('🔒 交易暂停模式: 跳过执行')
+            sys.exit(0)
         plan_file = '/tmp/dao_band_plan.json'
         if not os.path.exists(plan_file):
             print('⏭ 无交易计划文件')
