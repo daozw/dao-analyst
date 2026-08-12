@@ -21,14 +21,7 @@ echo "$(date '+%Y-%m-%d %H:%M:%S') PUSH $(wc -c < "$PENDING") bytes" >> "$LOG"
   --channel openclaw-weixin \
   --target "$TARGET" \
   --message "$CONTENT" \
-  > /tmp/cron_push_attempt.log 2>&1
-PUSH_EXIT=$?
+  >> "$LOG" 2>&1
 
-# 仅推送成功后才同步last_sent（失败时保留pending，供重试/网关relay补推）
-if [ $PUSH_EXIT -eq 0 ] && ! grep -qiE "error|failed|unknown channel|paused|errcode" /tmp/cron_push_attempt.log; then
-  cp "$PENDING" "$LAST_SENT"
-  echo "$(date '+%Y-%m-%d %H:%M:%S') SENT_OK" >> "$LOG"
-else
-  cat /tmp/cron_push_attempt.log >> "$LOG"
-  echo "$(date '+%Y-%m-%d %H:%M:%S') PUSH_FAILED exit=$PUSH_EXIT (保留pending)" >> "$LOG"
-fi
+# 同步last_sent
+cp "$PENDING" "$LAST_SENT"
