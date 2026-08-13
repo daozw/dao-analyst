@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 """
-手机通道守护 v3 — 微信+飞书通道健康检测 + 自动修复
+手机通道守护 v2 — 微信通道健康检测 + 自动修复
 检测网关进程 → 检查通道日志 → 发现断联自动重启
-微信: 断联可重启网关修复 | 飞书: UAT失效需人工授权(仅告警)
 修复方式: 通过 pkill 杀网关进程让 AutoClaw 自动重启
 """
 
@@ -16,7 +15,6 @@ STATE_FILE = Path.home() / ".openclaw-autoclaw" / "logs" / "channel-guard-state.
 
 # 阈值
 NO_ACTIVITY_MIN = 15       # 15分钟无微信活动 → 可疑
-FEISHU_REALERT_HOURS = 6   # 飞书UAT告警去重: 6小时内不重复告警
 NO_LOG_ACTIVITY_MIN = 10   # 10分钟网关日志无任何新内容 → 可能挂了
 MAX_RESTARTS_PER_HOUR = 2  # 1小时内最多重启2次
 GATEWAY_START_WAIT = 15    # 重启后等15秒检查
@@ -145,29 +143,6 @@ def weixin_status(minutes=15):
         pass
     return {"active": activity > 0, "errors": errors, "activity": activity, "delivery_fails": delivery_fails}
 
-def feishu_status(minutes=60):
-    """Check feishu connector health: user-token errors in gateway log"""
-    if not GATEWAY_LOG.exists():
-        return {"token_error": False, "count": 0, "last": None}
-    cutoff = datetime.now(TZ) - timedelta(minutes=minutes)
-    count = 0
-    last = None
-    try:
-        with open(GATEWAY_LOG) as f:
-            for line in f:
-                try:
-                    line_ts = datetime.fromisoformat(line[:19]).replace(tzinfo=TZ)
-                    if line_ts < cutoff:
-                        continue
-                except Exception as e:
-                    continue
-                if "feishu_token_unavailable" in line:
-                    count += 1
-                    last = line_ts
-    except Exception as e:
-        pass
-    return {"token_error": count > 0, "count": count, "last": last}
-
 def check_weixin_config():
     """Check if weixin account config exists and looks valid"""
     config = Path.home() / ".openclaw-autoclaw" / "openclaw-weixin" / "accounts.json"
@@ -251,25 +226,6 @@ def main():
 
     if wx["errors"] > 0:
         log(f"⚠️ 微信错误/失败 {wx['errors']}条 (含delivery-retry {wx['delivery_fails']}条)")
-
-    # 3.5 飞书通道检测 (UAT失效无法自动修复 → 告警提示)
-    fs = feishu_status(minutes=60)
-    if fs["token_error"]:
-        last_alert = state.get("feishu_last_alert")
-        recently = False
-        if last_alert:
-            try:
-                t = datetime.fromisoformat(last_alert).replace(tzinfo=TZ)
-                recently = (datetime.now(TZ) - t) < timedelta(hours=FEISHU_REALERT_HOURS)
-            except Exception as e:
-                pass
-        if recently:
-            warnings.append(f"⚠️ 飞书UAT失效持续中(6h内已告警 x{fs['count']}/60min)")
-        else:
-            issues.append(f"❌ 飞书UAT失效(feishu_token_unavailable x{fs['count']}/60min)，需人工重新授权")
-            state["feishu_last_alert"] = ts()
-    else:
-        state["feishu_last_alert"] = None
 
     # 4. 决策: 是否需要修复 (仅网关挂掉才自动重启)
     need_repair = not gw_ok
