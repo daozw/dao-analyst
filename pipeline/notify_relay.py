@@ -170,9 +170,11 @@ def relay():
         lines.append(f"💼 持仓{len(pos)}只 ¥{tv:,.0f} | {tp:+,.0f}")
 
     if buys:
-        lines.append("\n💰 买入:")
+        planned = all(a.get('planned') for a in buys)
+        lines.append("\n📋 建议买入:" if planned else "\n💰 买入:")
         for a in buys[-3:]:
-            lines.append(f"  {a['name']}({a['code']}) {a.get('quantity','?')}股 ¥{a['price']}")
+            mark = "📋 " if a.get('planned') else ""
+            lines.append(f"  {mark}{a['name']}({a['code']}) {a.get('quantity','?')}股 ¥{a['price']}")
     if sells:
         lines.append("\n📉 卖出:")
         for a in sells[-3:]:

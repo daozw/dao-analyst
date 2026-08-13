@@ -20,8 +20,19 @@ elif echo "$TEMP" | grep -q "防御抬头"; then
     echo "[$HOUR:$MIN] 🟠 防御抬头→半仓模式"
 fi
 
-# 正常交易
-.venv/bin/python3 pipeline/autotrade.py --plan --real 2>&1
+# 正常交易(180秒超时保护, 防止行情接口挂起)
+.venv/bin/python3 -c "
+import subprocess, sys
+try:
+    r = subprocess.run([sys.executable, 'pipeline/autotrade.py', '--plan', '--real'], capture_output=True, text=True, timeout=180)
+    print(r.stdout[-2500:])
+    if r.returncode != 0:
+        print(r.stderr[-500:])
+except subprocess.TimeoutExpired:
+    print('⏰ autotrade --plan 超时(180s), 跳过本轮')
+except Exception as e:
+    print(f'⚠️ autotrade 异常: {e}')
+"
 echo "[$HOUR:$MIN] ⏳ 等待60秒通知窗口..."
 sleep 60
 .venv/bin/python3 pipeline/autotrade.py --execute 2>&1

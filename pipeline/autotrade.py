@@ -565,6 +565,31 @@ def auto_trade(dry_run=True):
         lines.append(f"\n💰 今日买入 {len(executed)}只 ¥{sum(e['value'] for e in executed):,.0f}")
     else:
         lines.append(f"\n💰 今日无买入")
+    # 信号模式: TRADE_PAUSED 时买入计划写入推送管道(notify_relay→微信)
+    try:
+        if os.path.exists(os.path.join(BASE, "data", "TRADE_PAUSED")) and executed:
+            alert_file = os.path.join(BASE, "data", "live", "trade_alerts.json")
+            alerts = json.load(open(alert_file)) if os.path.exists(alert_file) else []
+            today = datetime.now().strftime('%Y-%m-%d')
+            for t in executed:
+                if t.get('action') == 'SELL':
+                    continue
+                qty = t.get('shares', t.get('quantity', 0))
+                alerts.append({
+                    "time": datetime.now().strftime('%H:%M:%S'),
+                    "date": today,
+                    "action": "BUY",
+                    "code": t['code'], "name": t['name'],
+                    "price": t['price'], "quantity": qty,
+                    "value": t.get('value', t['price'] * qty),
+                    "planned": True,
+                    "message": f"📋建议买入: {t['name']}({t['code']}) {qty}股 @¥{t['price']:.2f}"
+                })
+            with open(alert_file, "w") as f:
+                json.dump(alerts[-500:], f, ensure_ascii=False)
+            print(f"📋 建议已写入推送管道: {len(executed)}笔")
+    except Exception as e:
+        print(f"[warn] 建议写入失败: {e}")
     return "\n".join(lines), executed
 
 
