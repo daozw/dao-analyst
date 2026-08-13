@@ -176,9 +176,12 @@ def relay():
             mark = "📋 " if a.get('planned') else ""
             lines.append(f"  {mark}{a['name']}({a['code']}) {a.get('quantity','?')}股 ¥{a['price']}")
     if sells:
-        lines.append("\n📉 卖出:")
+        planned = all(a.get('planned') for a in sells)
+        lines.append("\n📋 建议卖出:" if planned else "\n📉 卖出:")
         for a in sells[-3:]:
-            lines.append(f"  {a['name']}({a['code']}) {a.get('quantity','?')}股 ¥{a['price']}")
+            mark = "📋 " if a.get('planned') else ""
+            reason = f" ({a['message'].split('(')[-1].rstrip(')')})" if a.get('planned') and '(' in a.get('message','') else ""
+            lines.append(f"  {mark}{a['name']}({a['code']}) {a.get('quantity','?')}股 ¥{a['price']}{reason}")
     if boards:
         lines.append("\n⚡ 打板:")
         for a in boards[-3:]:

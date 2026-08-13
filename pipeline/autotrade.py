@@ -292,9 +292,11 @@ def auto_trade(dry_run=True):
     band = wl.get("groups", {}).get("band", {}).get("stocks", [])
     state = load_daily_state()
     
+    TRADE_PAUSED = os.path.exists(os.path.join(BASE, "data", "TRADE_PAUSED"))
+    suggested_sells = []
     mx_pos, mx_tv, mx_tp = {}, 0, 0
     dyn_cap = CORE_CAP
-    if not dry_run:
+    if not dry_run or TRADE_PAUSED:
         try: mx_pos, mx_tv, mx_tp = get_band_positions(); dyn_cap = CORE_CAP + mx_tp
         except: pass
     
@@ -480,7 +482,7 @@ def auto_trade(dry_run=True):
 
     # ═══ CHOP时间止损检查 (震荡市: 持仓>3天未盈利→强制平仓) ═══
     regime = get_market_regime()
-    if regime == "CHOP" and not dry_run and mx_pos:
+    if regime == "CHOP" and mx_pos:
         # 从daily_state获取买入日期
         entry_dates = {}
         for st in state.get("stocks", []):
@@ -493,14 +495,18 @@ def auto_trade(dry_run=True):
                 d = fetch(code, use_cache=True)
                 if "error" in d: continue
                 price = d["price"]
+                if TRADE_PAUSED:
+                    suggested_sells.append({"code": code, "name": pos["name"], "qty": pos["qty"], "price": price, "reason": reason})
+                    lines.append(f"  📋建议卖出: {pos['name']}({code}) {pos['qty']}股 ({reason})")
+                    continue
                 ok, msg = _exec_trade("SELL", code, pos["name"], price, pos["qty"], dry_run)
                 lines.append(f"  ⏰ {msg} ({reason})")
                 if ok:
                     remaining += pos["qty"] * price
-                    record_daily_pnl(pnl=pos.get("profit", 0) / 1000)
+                    if not dry_run: record_daily_pnl(pnl=pos.get("profit", 0) / 1000)
 
-    # 止盈止损检查
-    if not dry_run and mx_pos:
+    # 止盈止损检查 (TRADE_PAUSED信号模式下也检查, 生成卖出建议)
+    if mx_pos:
         for code, pos in mx_pos.items():
             if code in today_codes:
                 lines.append(f"  🔒 {pos['name']} T+1锁仓(今日买入)")
@@ -534,6 +540,12 @@ def auto_trade(dry_run=True):
                 # No sell, just log
                 lines.append(f"  🟢 {pos['name']} {reason}")
             
+            if TRADE_PAUSED:
+                # 信号模式: 只收集建议不下单
+                sell_qty = max(100, pos["qty"] // 2 // 100 * 100) if "卖半仓" in reason else pos["qty"]
+                suggested_sells.append({"code": code, "name": pos["name"], "qty": sell_qty, "price": price, "reason": reason})
+                lines.append(f"  📋建议卖出: {pos['name']}({code}) {sell_qty}股 ({reason})")
+                continue
             if should and "卖半仓" in reason:
                 sell_qty = max(100, pos["qty"] // 2 // 100 * 100)
                 # 🔒 幂等检查
@@ -544,7 +556,7 @@ def auto_trade(dry_run=True):
                 lines.append(f"  {msg} ({reason})")
                 if ok:
                     remaining += sell_qty * price
-                    record_daily_pnl(pnl=pos.get("profit", 0) / 1000)
+                    if not dry_run: record_daily_pnl(pnl=pos.get("profit", 0) / 1000)
                 else:
                     release_lock(code, "SELL")
             elif should:
@@ -556,7 +568,7 @@ def auto_trade(dry_run=True):
                 lines.append(f"  {msg} ({reason})")
                 if ok:
                     remaining += pos["qty"] * price
-                    record_daily_pnl(pnl=pos.get("profit", 0) / 1000)
+                    if not dry_run: record_daily_pnl(pnl=pos.get("profit", 0) / 1000)
                 else:
                     release_lock(code, "SELL")
     
@@ -565,9 +577,9 @@ def auto_trade(dry_run=True):
         lines.append(f"\n💰 今日买入 {len(executed)}只 ¥{sum(e['value'] for e in executed):,.0f}")
     else:
         lines.append(f"\n💰 今日无买入")
-    # 信号模式: TRADE_PAUSED 时买入计划写入推送管道(notify_relay→微信)
+    # 信号模式: TRADE_PAUSED 时买卖建议统一写入推送管道(notify_relay→微信)
     try:
-        if os.path.exists(os.path.join(BASE, "data", "TRADE_PAUSED")) and executed:
+        if TRADE_PAUSED and (executed or suggested_sells):
             alert_file = os.path.join(BASE, "data", "live", "trade_alerts.json")
             alerts = json.load(open(alert_file)) if os.path.exists(alert_file) else []
             today = datetime.now().strftime('%Y-%m-%d')
@@ -585,9 +597,20 @@ def auto_trade(dry_run=True):
                     "planned": True,
                     "message": f"📋建议买入: {t['name']}({t['code']}) {qty}股 @¥{t['price']:.2f}"
                 })
+            for t in suggested_sells:
+                alerts.append({
+                    "time": datetime.now().strftime('%H:%M:%S'),
+                    "date": today,
+                    "action": "SELL",
+                    "code": t['code'], "name": t['name'],
+                    "price": t['price'], "quantity": t['qty'],
+                    "value": t['price'] * t['qty'],
+                    "planned": True,
+                    "message": f"📋建议卖出: {t['name']}({t['code']}) {t['qty']}股 @¥{t['price']:.2f} ({t['reason']})"
+                })
             with open(alert_file, "w") as f:
                 json.dump(alerts[-500:], f, ensure_ascii=False)
-            print(f"📋 建议已写入推送管道: {len(executed)}笔")
+            print(f"📋 建议已写入推送管道: 买{len(executed)}笔 卖{len(suggested_sells)}笔")
     except Exception as e:
         print(f"[warn] 建议写入失败: {e}")
     return "\n".join(lines), executed
