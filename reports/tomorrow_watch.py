@@ -218,11 +218,24 @@ def main():
     print('⚠️ 不构成投资建议 · 股市有风险 · 投资需谨慎')
 
 if __name__ == '__main__':
-    main()
+    import io, contextlib, os
+    buf = io.StringIO()
+    with contextlib.redirect_stdout(buf):
+        main()
+    out = buf.getvalue()
+    print(out, end='')
+    # 写缓存供relay推送
+    try:
+        tf = os.path.expanduser('~/.openclaw-autoclaw/workspace/reports/tomorrow_watch.txt')
+        os.makedirs(os.path.dirname(tf), exist_ok=True)
+        open(tf, 'w').write(out)
+    except Exception as e:
+        print(f'[warn] 写缓存失败: {e}')
 
 
 # ── 写relay文件供自动推送 ──
-try:
+if __name__ == '__main__':
+ try:
     import os,json
     rf = os.path.expanduser('~/dao-analyst/data/live/relay_pending.txt')
     tf = os.path.expanduser('~/.openclaw-autoclaw/workspace/reports/tomorrow_watch.txt')
@@ -231,4 +244,4 @@ try:
         summary = f"📅 明日关注\n{content[:700]}"
         with open(rf, 'w') as f:
             f.write(summary)
-except: pass
+ except: pass

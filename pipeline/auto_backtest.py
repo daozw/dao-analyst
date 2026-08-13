@@ -65,13 +65,21 @@ def main(weekend=False):
     
     lines.append(f"结论: {verdict}")
     
-    # 保存回测结果供进化报告使用
+    # 保存回测结果供进化报告使用 (dataclass须asdict转dict, 否则序列化失败)
     try:
+        from dataclasses import asdict as _asdict
         import json as _json_bt
-        bt_save = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        import os as _os
+        bt_save = _os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))),
                                "data", "state", "backtest_latest.json")
-        _json_bt.dump(r, open(bt_save, "w"), ensure_ascii=False, indent=2)
-    except: pass
+        _json_bt.dump(_asdict(r), open(bt_save, "w"), ensure_ascii=False, indent=2, default=str)
+    except Exception as _e:
+        print(f"[warn] backtest_latest.json写入失败: {_e}")
+    # 追加到回测历史(供self_evolve读取)
+    try:
+        engine.save_result(r)
+    except Exception as _e:
+        print(f"[warn] 回测历史写入失败: {_e}")
     
     # 🧬 生成5项进化报告
     try:

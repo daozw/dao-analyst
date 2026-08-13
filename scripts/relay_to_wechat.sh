@@ -1,5 +1,7 @@
 #!/bin/bash
-# DAO → 微信推送 v6 (2026-07-01 - 15分钟最小间隔,内容去重)
+# DAO → 微信推送 v7 (2026-08-13 - 账号已更新为bb791a8b5cdb)
+# ⚠️ 注意: openclaw CLI 不支持 openclaw-weixin 通道, CLI推送是死路。
+# 正式推送由 gateway cron 📨DAO通知推送(message工具+新账号)负责, 本脚本仅作API备用。
 set -e
 
 [ $(date +%u) -ge 6 ] && exit 0
@@ -9,8 +11,8 @@ FP_FILE="$HOME/dao-analyst/data/live/relay_fingerprint.txt"
 FP_SENT="$HOME/dao-analyst/data/live/relay_fp_sent.txt"
 CONTENT_SENT="$HOME/dao-analyst/data/live/relay_content_sent.txt"
 LOG_FILE="$HOME/dao-analyst/logs/relay_cron.log"
-CTX_FILE="$HOME/.openclaw-autoclaw/openclaw-weixin/accounts/accd3043ff7d-im-bot.context-tokens.json"
-ACCT_FILE="$HOME/.openclaw-autoclaw/openclaw-weixin/accounts/accd3043ff7d-im-bot.json"
+CTX_FILE="$HOME/.openclaw-autoclaw/openclaw-weixin/accounts/bb791a8b5cdb-im-bot.context-tokens.json"
+ACCT_FILE="$HOME/.openclaw-autoclaw/openclaw-weixin/accounts/bb791a8b5cdb-im-bot.json"
 
 BASE_URL="https://ilinkai.weixin.qq.com"
 TARGET="o9cq80wRoXDnZLK2e_Z4fWXMSNSs@im.wechat"

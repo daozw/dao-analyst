@@ -17,15 +17,15 @@ idx = md.get('index', {})
 print(f'上证 {idx.get(\"price\",\"-\")} {idx.get(\"chg\",0):+.2f}%')
 
 # MX持仓
-from pipeline.autotrade import get_mx_positions, get_dynamic_capital
+from pipeline.autotrade import get_mx_positions
 try:
     pos, total_val, total_pnl = get_mx_positions()
-    cap = get_dynamic_capital()
+    cap = total_val
     print(f'\n📦 MX持仓 {len(pos)}只 ¥{total_val:,.0f}')
     for code, p in pos.items():
         arrow = '🔴' if p['profit_pct'] > 0 else '🟢' if p['profit_pct'] < 0 else '➖'
         print(f'  {arrow} {p[\"name\"]} {p[\"qty\"]}股 {p[\"profit_pct\"]:+.1f}%')
-    print(f'  总盈亏 ¥{total_pnl:+,.0f} | 动态资金 ¥{cap:,.0f}')
+    print(f'  总盈亏 ¥{total_pnl:+,.0f} | 持仓市值 ¥{cap:,.0f}')
 except Exception as e:
     print(f'  MX查询失败: {e}')
 

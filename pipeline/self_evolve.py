@@ -75,10 +75,11 @@ def evolve():
         return
 
     latest = results[0]
-    metrics = latest.get("metrics", {})
+    # 兼容两种结构: 顶层字段(backtest/results.json) 或嵌套 metrics
+    metrics = latest.get("metrics") or latest
     win_rate = metrics.get("win_rate", 0)
     sharpe = metrics.get("sharpe", 0)
-    max_dd = metrics.get("max_drawdown", 0)
+    max_dd = metrics.get("max_drawdown", metrics.get("max_loss", 0))
     
     changes = {}
     

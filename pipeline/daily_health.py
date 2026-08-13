@@ -10,7 +10,7 @@ def check_syntax():
     """语法检查(快速)"""
     issues = []
     for root, dirs, files in os.walk(BASE):
-        dirs[:] = [d for d in dirs if d not in ['__pycache__','.git','.venv','logs','data','quant-research','quant']]
+        dirs[:] = [d for d in dirs if d not in ['__pycache__','.git','.venv','logs','data','quant-research','quant','github-repos']]
         for f in files:
             if not f.endswith('.py'): continue
             path = os.path.join(root, f)
@@ -32,7 +32,7 @@ def check_files():
         'pipeline/auto_backtest.py': '自动回测',
         'pipeline/trade_notify.py': '交易通知',
         'reports/tomorrow_watch.py': '明日关注',
-        'board_scanner.py': '打板扫描',
+        'board_lightning.py': '打板扫描',
         'data/watchlist.json': '自选池',
         'data/evolve_params.json': '进化参数',
     }
@@ -91,7 +91,7 @@ def check_cron():
         
         required_scripts = [
             ('autotrade', '波段交易'), ('band_monitor', '波段监控'),
-            ('board_scanner', '打板扫描'), ('tomorrow_watch', '明日关注'),
+            ('board_lightning', '打板扫描'), ('tomorrow_watch', '明日关注'),
             ('tier_review', '梯队复盘'),
             ('stress_test', '压力测试'),
         ]
@@ -122,7 +122,7 @@ def check_runtime(mode='light'):
         ('pipeline/stress_test.py', [], '压力测试'),
         ('pipeline/trade_notify.py', ['pending'], '交易通知'),
         ('reports/tomorrow_watch.py', [], '明日关注'),
-        ('board_scanner.py', [], '打板扫描'),
+        ('board_lightning.py', [], '打板扫描'),
     ]
     
     for path, args, name in modules:

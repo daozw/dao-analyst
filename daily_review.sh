@@ -17,12 +17,12 @@ idx = md.get('index', {})
 print(f'上证 {idx.get(\"price\",\"-\")} {idx.get(\"chg\",0):+.2f}%')
 
 # 持仓表现（从MX查）
-from pipeline.autotrade import get_mx_positions, get_dynamic_capital
+from pipeline.autotrade import get_mx_positions
 try:
     pos, total_val, total_pnl = get_mx_positions()
-    cap = get_dynamic_capital()
+    cap = total_val
     print(f'MX持仓 {len(pos)}只 ¥{total_val:,.0f} 盈亏¥{total_pnl:+,.0f}')
-    print(f'动态总资金 ¥{cap:,.0f}')
+    print(f'持仓市值 ¥{cap:,.0f}')
     for code, p in pos.items():
         d = fetch(code, use_cache=False)
         sig = ''
