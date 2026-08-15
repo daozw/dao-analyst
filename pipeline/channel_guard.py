@@ -62,7 +62,24 @@ def gateway_pid():
             return r.stdout.strip()
     except Exception:
         pass
-    # Fallback 2: detect via 'openclaw' binary (native package / PATH)
+    # Fallback 2: native openclaw gateway = the LONGEST-LIVED openclaw process.
+    # Transient openclaw CLI processes spawned by cron sessions live only minutes and
+    # would otherwise mask a dead gateway and suppress auto-restart; the real gateway
+    # is the supervisor-spawned persistent process (hours/days uptime)
+    try:
+        r = subprocess.run(
+            ["sh", "-c",
+             "ps -eo pid,etime,comm | awk '$3==\"openclaw\" {"
+             "e=$2; n=split(e,a,\"-\"); if(n==2){d=a[1]; t=a[2]} else {d=0; t=e}"
+             "m=split(t,c,\":\"); if(m==3) s=c[1]*3600+c[2]*60+c[3]; else if(m==2) s=c[1]*60+c[2]; else s=c[1]"
+             "s+=d*86400; if(s>mx){mx=s; best=$1}} END {print best}'"],
+            capture_output=True, text=True, timeout=5
+        )
+        if r.stdout.strip().isdigit():
+            return r.stdout.strip()
+    except Exception:
+        pass
+    # Fallback 3: detect via 'openclaw' binary (native package / PATH)
     try:
         r = subprocess.run(
             ["pgrep", "-x", "openclaw"],
@@ -72,7 +89,7 @@ def gateway_pid():
             return r.stdout.strip().split("\n")[0]
     except Exception:
         pass
-    # Fallback 3: detect via ps comm=openclaw (catches native openclaw process)
+    # Fallback 4: detect via ps comm=openclaw (catches native openclaw process)
     try:
         r = subprocess.run(
             ["sh", "-c", "ps -eo pid,comm | grep -v grep | grep 'openclaw' | awk '{print $1}' | head -1"],
@@ -272,7 +289,7 @@ def main():
         state["feishu_last_alert"] = None
 
     # 4. 决策: 是否需要修复 (仅网关挂掉才自动重启)
-    need_repair = not gw_ok
+    need_repair = (not gw_ok) or (log_age is not None and log_age > NO_LOG_ACTIVITY_MIN * 60)
     repaired = False
 
     if need_repair:
