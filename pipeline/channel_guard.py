@@ -20,6 +20,7 @@ FEISHU_REALERT_HOURS = 6   # 飞书UAT告警去重: 6小时内不重复告警
 NO_LOG_ACTIVITY_MIN = 10   # 10分钟网关日志无任何新内容 → 可能挂了
 MAX_RESTARTS_PER_HOUR = 2  # 1小时内最多重启2次
 GATEWAY_START_WAIT = 15    # 重启后等15秒检查
+GATEWAY_MIN_AGE_MIN = 15   # 网关进程最低年龄(分钟): 排除崩溃循环/瞬时exec进程的PID误报
 
 def ts():
     return datetime.now(TZ).isoformat(timespec="seconds")
@@ -41,6 +42,31 @@ def save_state(s):
     STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
     STATE_FILE.write_text(json.dumps(s, indent=2, ensure_ascii=False))
 
+def pid_age_minutes(pid):
+    """\u8fdb\u7a0b\u5b58\u6d3b\u5206\u949f\u6570; \u8fdb\u7a0b\u4e0d\u5b58\u5728\u6216\u89e3\u6790\u5931\u8d25\u8fd4\u56deNone"""
+    try:
+        r = subprocess.run(
+            ["sh", "-c", f"ps -o etime= -p {int(pid)} | tr -d ' '"],
+            capture_output=True, text=True, timeout=5
+        )
+        e = r.stdout.strip()
+        if not e:
+            return None
+        days, rest = (e.split('-', 1) + [None])[:2] if '-' in e else (0, e)
+        if rest is None:
+            return None
+        days = int(days) if str(days).isdigit() else 0
+        parts = rest.split(':')
+        if len(parts) == 3:
+            h, m, s = int(parts[0]), int(parts[1]), int(parts[2])
+        elif len(parts) == 2:
+            h, m, s = 0, int(parts[0]), int(parts[1])
+        else:
+            return None
+        return days * 1440 + h * 60 + m
+    except Exception:
+        return None
+
 def gateway_pid():
     """Detect gateway via ps - args-only match avoids false matches on our own detection commands"""
     try:
@@ -49,7 +75,14 @@ def gateway_pid():
             capture_output=True, text=True, timeout=5
         )
         if r.returncode == 0 and r.stdout.strip():
-            return r.stdout.strip().split("\n")[0]
+            # 2026-08-16: embedded运行时(0aa756dc)自08-11起崩溃循环, 瞬时进程周期性命中此模式,
+            # 导致每轮PID漂移(误报先例: 15705/3437/74877/84734/94337)。加年龄门槛:
+            # <15min视为瞬时进程不采信, 回退最长存活检测。
+            for cand in r.stdout.strip().split("\n"):
+                age = pid_age_minutes(cand)
+                if age is not None and age >= GATEWAY_MIN_AGE_MIN:
+                    return cand
+            # 全部候选过年轻(崩溃循环/瞬时exec) → 继续下一fallback
     except Exception:
         pass
     # Fallback: ps + precise grep
@@ -59,7 +92,10 @@ def gateway_pid():
             capture_output=True, text=True, timeout=5
         )
         if r.stdout.strip().isdigit():
-            return r.stdout.strip()
+            cand = r.stdout.strip()
+            if (pid_age_minutes(cand) or 0) >= GATEWAY_MIN_AGE_MIN:
+                return cand
+            # 过年轻 → 崩溃循环/瞬时进程, 继续下一fallback
     except Exception:
         pass
     # Fallback 2: native openclaw gateway = the LONGEST-LIVED openclaw process.
