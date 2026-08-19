@@ -1565,5 +1565,35 @@
     "avg_loss": 0,
     "profit_factor": 0,
     "top_trades": []
+  },
+  {
+    "timestamp": "2026-08-19T15:16:33.542327",
+    "params_name": "猎鹰 v2.6T",
+    "params": {
+      "name": "猎鹰",
+      "version": "v2.6T",
+      "ma_period": 20,
+      "atr_period": 14,
+      "stop_atr": 2.5,
+      "profit_atr": 3.5,
+      "chg_min": 0.3,
+      "chg_max": 8.0,
+      "vol_ratio_min": 1.2,
+      "kelly_fraction": 0.25,
+      "capital": 20000,
+      "use_ma5": true
+    },
+    "period": "2026-05-21~2026-08-19",
+    "total_stocks": 20,
+    "signals": 0,
+    "trades": 0,
+    "wins": 0,
+    "losses": 0,
+    "win_rate": 0,
+    "total_pnl": 0,
+    "avg_win": 0,
+    "avg_loss": 0,
+    "profit_factor": 0,
+    "top_trades": []
   }
 ]
