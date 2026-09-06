@@ -493,5 +493,50 @@
         "max_drawdown": 0
       }
     ]
+  },
+  {
+    "time": "2026-09-06T21:00:00.434702",
+    "results": [
+      {
+        "scenario": "闪崩",
+        "capital": 20000,
+        "final_cash": 19600.0,
+        "return_pct": -2.0,
+        "trades": 1,
+        "max_drawdown": 0
+      },
+      {
+        "scenario": "熊市周",
+        "capital": 20000,
+        "final_cash": 19144.11,
+        "return_pct": -4.28,
+        "trades": 3,
+        "max_drawdown": -7.11
+      },
+      {
+        "scenario": "疯牛",
+        "capital": 20000,
+        "final_cash": 20250.0,
+        "return_pct": 1.25,
+        "trades": 1,
+        "max_drawdown": 0
+      },
+      {
+        "scenario": "横盘震荡",
+        "capital": 20000,
+        "final_cash": 20000.0,
+        "return_pct": 0.0,
+        "trades": 1,
+        "max_drawdown": 0
+      },
+      {
+        "scenario": "跳空暴跌",
+        "capital": 20000,
+        "final_cash": 18943.09,
+        "return_pct": -5.28,
+        "trades": 2,
+        "max_drawdown": -10.57
+      }
+    ]
   }
 ]
