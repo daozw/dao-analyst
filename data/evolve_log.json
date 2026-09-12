@@ -89,5 +89,18 @@
       "min_gain_pct": "+0.5%",
       "reason": "胜率0.0%<40%，收紧涨幅门槛"
     }
+  },
+  {
+    "time": "2026-09-12T20:00:00.674372",
+    "action": "evolved",
+    "metrics_snapshot": {
+      "win_rate": 0,
+      "sharpe": 0,
+      "max_dd": 0
+    },
+    "params_changed": {
+      "min_gain_pct": "+0.5%",
+      "reason": "胜率0.0%<40%，收紧涨幅门槛"
+    }
   }
 ]
