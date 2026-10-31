@@ -101,9 +101,12 @@ def check_gateway():
             ["ps", "-eo", "pid,comm"],
             capture_output=True, text=True, timeout=5
         )
+        # 2026-10-31 fix: 网关二进制名为 openclaw (非 openclaw-gateway), comm精确匹配避免误报
+        # (先例: channel_guard.py gateway_pid() 同类false-negative已于07-13修复)
         for line in result.stdout.split("\n"):
-            if "openclaw-gateway" in line:
-                pid = line.strip().split()[0]
+            parts = line.strip().split(None, 1)
+            if len(parts) == 2 and parts[1].strip() in ("openclaw", "openclaw-gateway"):
+                pid = parts[0]
                 return ("✅", f"网关运行中 PID={pid}", False)
         return ("❌", "网关进程未找到", True)
     except Exception as e:
